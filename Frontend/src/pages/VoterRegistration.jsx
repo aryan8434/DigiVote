@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../utils/axiosClient';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -99,16 +99,17 @@ export default function VoterRegistration() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <button
-        onClick={() => navigate('/')}
-        className="flex items-center gap-2 text-slate-600 hover:text-emerald-700 mb-6"
-      >
-        <ArrowLeft className="w-5 h-5" />
-        Back
-      </button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-emerald-50 py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 text-slate-600 hover:text-emerald-700 mb-6"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          Back
+        </button>
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
           <h2 className="text-2xl font-bold text-slate-800">Voter Registration</h2>
 
           {error && (
@@ -324,5 +325,6 @@ export default function VoterRegistration() {
           </button>
         </form>
       </div>
+    </div>
   );
 }

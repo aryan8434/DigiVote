@@ -20,20 +20,13 @@ export default function HelpDesk() {
 
   useEffect(() => {
     if (query.trim().length >= 2) {
-      const fetchCandidates = async () => {
-        setLoading(true);
-        try {
-          const r = await axiosClient.get(
-            `/api/candidate/search?q=${encodeURIComponent(query.trim())}`
-          );
+      setLoading(true);
+      axiosClient
+        .get(`/api/candidate/search?q=${encodeURIComponent(query.trim())}`)
+        .then((r) => {
           if (r.data?.candidates) setCandidates(r.data.candidates);
-        } catch {
-          setCandidates([]);
-        } finally {
-          setLoading(false);
-        }
-      };
-      fetchCandidates();
+        })
+        .finally(() => setLoading(false));
     } else {
       setCandidates([]);
     }
@@ -44,7 +37,8 @@ export default function HelpDesk() {
     : FAQs;
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-emerald-50 py-8 px-4">
+      <div className="max-w-3xl mx-auto">
         <button
           onClick={() => navigate('/')}
           className="flex items-center gap-2 text-slate-600 hover:text-emerald-700 mb-6"
@@ -150,5 +144,6 @@ export default function HelpDesk() {
           </div>
         </div>
       </div>
+    </div>
   );
 }

@@ -49,7 +49,8 @@ export default function AdminConfig() {
   };
 
   return (
-    <div className="max-w-lg mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-emerald-50 py-8 px-4">
+      <div className="max-w-lg mx-auto">
         <button
           onClick={() => navigate('/')}
           className="flex items-center gap-2 text-slate-600 hover:text-emerald-700 mb-6"
@@ -116,5 +117,6 @@ export default function AdminConfig() {
           </button>
         </form>
       </div>
+    </div>
   );
 }

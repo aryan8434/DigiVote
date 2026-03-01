@@ -22,6 +22,7 @@ export default function VoteFlow() {
   const [constituencies, setConstituencies] = useState([]);
   const [wards, setWards] = useState([]);
   const [fingerprintHash, setFingerprintHash] = useState('');
+  const [voterVerified, setVoterVerified] = useState(false);
   const [candidates, setCandidates] = useState([]);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
 
@@ -47,6 +48,7 @@ export default function VoteFlow() {
     try {
       const res = await axiosClient.post('/api/vote/verify', form);
       if (res.data?.success && res.data?.canVote) {
+        setVoterVerified(true);
         setStep(1); // go directly to fingerprint step
       } else {
         setError(res.data?.message || 'Cannot proceed to vote.');
@@ -96,23 +98,24 @@ export default function VoteFlow() {
   const currentStep = STEPS[step];
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <button
-        onClick={() => (step === 0 ? navigate('/') : setStep(step - 1))}
-        className="flex items-center gap-2 text-slate-600 hover:text-emerald-700 mb-6"
-      >
-        <ArrowLeft className="w-5 h-5" />
-        Back
-      </button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-emerald-50 py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        <button
+          onClick={() => (step === 0 ? navigate('/') : setStep(step - 1))}
+          className="flex items-center gap-2 text-slate-600 hover:text-emerald-700 mb-6"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          Back
+        </button>
 
-      {error && (
-        <div className="mb-4 p-4 rounded-lg bg-rose-100 text-rose-800 border border-rose-200">
-          {error}
-        </div>
-      )}
+        {error && (
+          <div className="mb-4 p-4 rounded-lg bg-rose-100 text-rose-800 border border-rose-200">
+            {error}
+          </div>
+        )}
 
-      {currentStep === 'details' && (
-        <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
+        {currentStep === 'details' && (
+          <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
             <h2 className="text-2xl font-bold text-slate-800">Sign In to Vote</h2>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">{t.constituency}</label>
@@ -260,5 +263,6 @@ export default function VoteFlow() {
           </div>
         )}
       </div>
+    </div>
   );
 }
