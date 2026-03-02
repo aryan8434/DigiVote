@@ -96,9 +96,16 @@ function broadcastElectionUpdate() {
 const InitializeConnection = async () => {
   try {
     await main();
+
+    // Attempt Redis connection, but don't block server startup if it fails
     if (redisClient && typeof redisClient.connect === 'function') {
-      await redisClient.connect();
+      try {
+        await redisClient.connect();
+      } catch (redisError) {
+        console.error('Redis connection failed:', redisError.message);
+      }
     }
+
     console.log('DB Connected');
 
     const port = process.env.PORT || 3000;
