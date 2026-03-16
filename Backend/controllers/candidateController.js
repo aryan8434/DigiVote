@@ -1,15 +1,21 @@
 const Candidate = require('../model/Candidate');
 const mongoose = require('mongoose');
+const { uploadToCloudinary } = require('../utils/cloudinary');
+
+const parseArray = (item) => {
+  if (!item) return [];
+  if (Array.isArray(item)) return item;
+  try { return JSON.parse(item); } catch(e) { return item.split(',').map(s=>s.trim()); }
+};
 
 /**
  * Register a new candidate
  */
 async function registerCandidate(req, res) {
   try {
-    const {
+    let {
       name,
       partyName,
-      symbolURL,
       position,
       constituency,
       education,
@@ -19,8 +25,23 @@ async function registerCandidate(req, res) {
       criminalRecord,
       assetsDeclared,
       contact,
-      photoURL,
     } = req.body;
+
+    let photoURL = req.body.photoURL || '';
+    let symbolURL = req.body.symbolURL || '';
+
+    // Handle incoming JSON strings for array fields
+    education = parseArray(education);
+    experience = parseArray(experience);
+    achievements = parseArray(achievements);
+    promises = parseArray(promises);
+    
+    let parsedContact = {};
+    if (contact) {
+      if (typeof contact === 'string') {
+        try { parsedContact = JSON.parse(contact); } catch (e) { parsedContact = {}; }
+      } else { parsedContact = contact; }
+    }
 
     if (
       !name ||
@@ -39,6 +60,16 @@ async function registerCandidate(req, res) {
       });
     }
 
+    // Upload files if they exist
+    if (req.files && req.files['photoURL'] && req.files['photoURL'][0]) {
+      const file = req.files['photoURL'][0];
+      photoURL = await uploadToCloudinary(file.buffer, file.mimetype, 'candidates/photos');
+    }
+    if (req.files && req.files['symbolURL'] && req.files['symbolURL'][0]) {
+      const file = req.files['symbolURL'][0];
+      symbolURL = await uploadToCloudinary(file.buffer, file.mimetype, 'candidates/symbols');
+    }
+
     const candidate = await Candidate.create({
       name: String(name).trim(),
       partyName: String(partyName).trim(),
@@ -46,20 +77,18 @@ async function registerCandidate(req, res) {
       photoURL: photoURL ? String(photoURL).trim() : '',
       position: String(position).trim(),
       constituency: String(constituency).trim(),
-      education: Array.isArray(education) ? education.map((e) => String(e).trim()) : [],
-      experience: Array.isArray(experience) ? experience.map((e) => String(e).trim()) : [],
-      achievements: Array.isArray(achievements) ? achievements.map((a) => String(a).trim()) : [],
-      promises: Array.isArray(promises) ? promises.map((p) => String(p).trim()) : [],
+      education: education.map((e) => String(e).trim()),
+      experience: experience.map((e) => String(e).trim()),
+      achievements: achievements.map((a) => String(a).trim()),
+      promises: promises.map((p) => String(p).trim()),
       criminalRecord: criminalRecord ? String(criminalRecord).trim() : 'NONE',
       assetsDeclared: assetsDeclared ? String(assetsDeclared).trim() : '',
-      contact: contact
-        ? {
-            email: String(contact.email || '').trim(),
-            phone: String(contact.phone || '').trim(),
-            facebook: String(contact.facebook || '').trim(),
-            twitter: String(contact.twitter || '').trim(),
-          }
-        : {},
+      contact: {
+        email: String(parsedContact.email || '').trim(),
+        phone: String(parsedContact.phone || '').trim(),
+        facebook: String(parsedContact.facebook || '').trim(),
+        twitter: String(parsedContact.twitter || '').trim(),
+      },
     });
 
     res.status(201).json({

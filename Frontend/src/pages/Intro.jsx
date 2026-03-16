@@ -5,7 +5,7 @@ const DIGIVOTE_LOGO_URL = "https://drive.google.com/thumbnail?id=1naSUDeBakElU24
 
 export default function Intro() {
   const navigate = useNavigate();
-  const { t, toggleLang } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col overflow-x-hidden">
@@ -15,12 +15,6 @@ export default function Intro() {
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-bold tracking-tight">DigiVote</h1>
           </div>
-          <button
-            onClick={toggleLang}
-            className="px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/50 text-emerald-400 text-sm font-bold hover:bg-emerald-500 hover:text-slate-950 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-          >
-            {t.changeLanguage}
-          </button>
         </div>
       </header>
 

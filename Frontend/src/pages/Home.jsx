@@ -124,12 +124,6 @@ export default function Home() {
             >
               Admin Console
             </button>
-            <button
-              onClick={toggleLang}
-              className="px-3 sm:px-4 py-2 rounded-lg bg-emerald-500 text-xs sm:text-sm font-semibold text-slate-950 hover:bg-emerald-400 shadow-[0_10px_35px_rgba(16,185,129,0.45)] transition-colors"
-            >
-              {t.changeLanguage}
-            </button>
           </div>
         </div>
       </header>

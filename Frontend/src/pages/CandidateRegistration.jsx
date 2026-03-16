@@ -60,6 +60,9 @@ export default function CandidateRegistration() {
   const [photoPreview, setPhotoPreview] = useState('');
   const [symbolPreview, setSymbolPreview] = useState('');
 
+  const [photoFile, setPhotoFile] = useState(null);
+  const [symbolFile, setSymbolFile] = useState(null);
+
   const update = (key, value) => {
     if (key.startsWith('contact.')) {
       const sub = key.split('.')[1];
@@ -86,7 +89,26 @@ export default function CandidateRegistration() {
         setLoading(false);
         return;
       }
-      const res = await axiosClient.post('/api/candidate/register', payload);
+
+      const formData = new FormData();
+      Object.keys(payload).forEach(key => {
+        // Skip URL fields, we'll append the actual files below
+        if (key === 'photoURL' || key === 'symbolURL') return;
+        
+        if (Array.isArray(payload[key]) || typeof payload[key] === 'object') {
+          formData.append(key, JSON.stringify(payload[key]));
+        } else {
+          formData.append(key, payload[key]);
+        }
+      });
+
+      if (photoFile) formData.append('photoURL', photoFile);
+      if (symbolFile) formData.append('symbolURL', symbolFile);
+
+      const res = await axiosClient.post('/api/candidate/register', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
       if (res.data?.success) {
         alert('Candidate registration successful!');
         navigate('/');
@@ -100,60 +122,28 @@ export default function CandidateRegistration() {
     }
   };
 
-  const uploadImage = async (file, folder) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('folder', folder);
-    const res = await axiosClient.post('/api/upload/image', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-    return res.data?.url;
-  };
-
-  const handlePhotoChange = async (e) => {
+  const handlePhotoChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) {
       setPhotoPreview('');
-      update('photoURL', '');
+      setPhotoFile(null);
       return;
     }
     const localUrl = URL.createObjectURL(file);
     setPhotoPreview(localUrl);
-    try {
-      setLoading(true);
-      const url = await uploadImage(file, 'candidates/photos');
-      if (url) {
-        update('photoURL', url);
-        setPhotoPreview(url);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Photo upload failed.');
-    } finally {
-      setLoading(false);
-    }
+    setPhotoFile(file);
   };
 
-  const handleSymbolChange = async (e) => {
+  const handleSymbolChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) {
       setSymbolPreview('');
-      update('symbolURL', '');
+      setSymbolFile(null);
       return;
     }
     const localUrl = URL.createObjectURL(file);
     setSymbolPreview(localUrl);
-    try {
-      setLoading(true);
-      const url = await uploadImage(file, 'candidates/symbols');
-      if (url) {
-        update('symbolURL', url);
-        setSymbolPreview(url);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Symbol upload failed.');
-    } finally {
-      setLoading(false);
-    }
+    setSymbolFile(file);
   };
 
   return (
