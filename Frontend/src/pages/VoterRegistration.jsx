@@ -1,20 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../utils/axiosClient';
 import { useLanguage } from '../contexts/LanguageContext';
 import FingerprintSimulator from '../components/FingerprintSimulator';
 import HardwareFingerprintCapture from '../components/HardwareFingerprintCapture';
 import { ArrowLeft, Check } from 'lucide-react';
-import { sha256 } from '../utils/sha256';
 
 export default function VoterRegistration() {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [faceHash, setFaceHash] = useState('');
   const [fingerprintHash, setFingerprintHash] = useState('');
-  const [photoPreview, setPhotoPreview] = useState('');
   const [form, setForm] = useState({
     fullName: '',
     fatherOrHusbandName: '',
@@ -41,7 +38,6 @@ export default function VoterRegistration() {
     form.ward &&
     form.booth &&
     form.contact &&
-    faceHash &&
     fingerprintHash;
 
   const handleSubmit = async (e) => {
@@ -53,7 +49,6 @@ export default function VoterRegistration() {
       const res = await axiosClient.post('/api/voter/register', {
         ...form,
         fingerprintHash,
-        faceDataHash: faceHash,
       });
       if (res.data?.success) {
         alert('Registration successful! Document and biometric verified.');
@@ -75,28 +70,6 @@ export default function VoterRegistration() {
     } else {
       setForm((f) => ({ ...f, [key]: value }));
     }
-  };
-
-  const handlePhotoChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) {
-      setPhotoPreview('');
-      setFaceHash('');
-      return;
-    }
-    const objectUrl = URL.createObjectURL(file);
-    setPhotoPreview(objectUrl);
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      try {
-        const dataUrl = reader.result;
-        const hash = await sha256(dataUrl);
-        setFaceHash(hash);
-      } catch {
-        setError('Failed to process photo. Please try another image.');
-      }
-    };
-    reader.readAsDataURL(file);
   };
 
   return (
@@ -277,29 +250,6 @@ export default function VoterRegistration() {
           <div className="pt-4 border-t border-slate-200">
             <h3 className="font-semibold text-slate-800 mb-4">{t.biometricData}</h3>
             <div className="space-y-6">
-              <div>
-                <p className="text-sm font-medium text-slate-700 mb-2">{t.photoWithLiveness}</p>
-                <div className="space-y-3">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePhotoChange}
-                    className="block w-full text-sm text-slate-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
-                  />
-                  {photoPreview && (
-                    <img
-                      src={photoPreview}
-                      alt="Voter preview"
-                      className="w-32 h-32 rounded-full object-cover border border-slate-200"
-                    />
-                  )}
-                  {!photoPreview && (
-                    <p className="text-xs text-slate-500">
-                      Upload a clear face photo. It will be secured using SHA-256 hashing.
-                    </p>
-                  )}
-                </div>
-              </div>
               <div>
                 <p className="text-sm font-medium text-slate-700 mb-2">{t.fingerprintLabel}</p>
                 <div className="space-y-4">

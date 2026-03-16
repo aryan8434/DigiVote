@@ -19,7 +19,6 @@ async function registerVoter(req, res) {
       booth,
       contact,
       fingerprintHash,
-      faceDataHash,
     } = req.body;
 
     if (
@@ -42,10 +41,10 @@ async function registerVoter(req, res) {
       });
     }
 
-    if (!fingerprintHash || !faceDataHash) {
+    if (!fingerprintHash) {
       return res.status(400).json({
         success: false,
-        message: 'Biometric data (fingerprintHash and faceDataHash) are required.',
+        message: 'Biometric data (fingerprintHash) is required.',
       });
     }
 
@@ -75,8 +74,7 @@ async function registerVoter(req, res) {
       booth: String(booth).trim(),
       contact: String(contact).trim(),
       fingerprintHash: String(fingerprintHash).trim(),
-      faceDataHash: String(faceDataHash).trim(),
-      isVerified: true, // Simplified: accept if both biometrics provided
+      isVerified: true, // Simplified: accept if fingerprint provided
     });
 
     res.status(201).json({
@@ -140,9 +138,30 @@ async function computeBiometricHash(req, res) {
   }
 }
 
+/**
+ * Verify a voter ID
+ */
+async function verifyVoter(req, res) {
+  try {
+    const { voterId } = req.params;
+    
+    // Find the voter by voterId
+    const voter = await Voter.findOne({ voterId: String(voterId).trim() });
+    
+    if (!voter) {
+      return res.status(404).json({ success: false, message: 'Voter ID not found. Please register first.' });
+    }
+    
+    res.json({ success: true, message: 'Voter verified.', voterDetails: { fullName: voter.fullName, voterId: voter.voterId, constituency: voter.constituency } });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error during verification.' });
+  }
+}
+
 module.exports = {
   registerVoter,
   getConstituencies,
   getWards,
   computeBiometricHash,
+  verifyVoter,
 };

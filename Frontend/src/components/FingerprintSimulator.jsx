@@ -6,8 +6,7 @@ export default function FingerprintSimulator({ onHash }) {
   const [value, setValue] = useState('');
   const [done, setDone] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleVerify = async () => {
     if (!value.trim()) return;
     const hash = await sha256(value.trim());
     onHash?.(hash);
@@ -27,7 +26,7 @@ export default function FingerprintSimulator({ onHash }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center gap-3 p-4 rounded-xl bg-slate-100 border border-slate-200">
         <Fingerprint className="w-10 h-10 text-slate-500" />
         <div className="flex-1">
@@ -48,12 +47,13 @@ export default function FingerprintSimulator({ onHash }) {
         </div>
       </div>
       <button
-        type="submit"
+        type="button"
+        onClick={handleVerify}
         disabled={!value.trim()}
         className="w-full py-3 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 disabled:opacity-50 transition"
       >
         Verify Fingerprint
       </button>
-    </form>
+    </div>
   );
 }

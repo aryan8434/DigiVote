@@ -44,7 +44,7 @@ export default function Intro() {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <button
-                onClick={() => navigate('/home')}
+                onClick={() => navigate('/voter-login')}
                 className="px-8 py-4 rounded-xl bg-emerald-500 text-slate-950 font-bold text-lg hover:bg-emerald-400 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(16,185,129,0.3)]"
               >
                 Enter Voting Portal

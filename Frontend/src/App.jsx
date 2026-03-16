@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { LanguageProvider } from './contexts/LanguageContext';
 import Intro from './pages/Intro';
+import VoterLogin from './pages/VoterLogin';
 import Home from './pages/Home';
 import VoteFlow from './pages/VoteFlow';
 import VoterRegistration from './pages/VoterRegistration';
@@ -14,6 +15,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<Intro />} />
+          <Route path="/voter-login" element={<VoterLogin />} />
           <Route path="/home" element={<Home />} />
           <Route path="/vote" element={<VoteFlow />} />
           <Route path="/voter-registration" element={<VoterRegistration />} />

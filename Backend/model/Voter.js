@@ -66,11 +66,6 @@ const voterSchema = new Schema(
       trim: true,
       default: null,
     },
-    faceDataHash: {
-      type: String,
-      trim: true,
-      default: null,
-    },
     isVerified: {
       type: Boolean,
       default: false,
