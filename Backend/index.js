@@ -17,6 +17,7 @@ const voterRouter = require('./routes/voterRoute');
 const candidateRouter = require('./routes/candidateRoute');
 const configRouter = require('./routes/configRoute');
 const uploadRouter = require('./routes/uploadRoute');
+const adminRouter = require('./routes/adminRoute');
 const { getServerTime } = require('./middleware/timeGuard');
 
 const app = express();
@@ -64,6 +65,7 @@ app.use('/api/voter', voterRouter);
 app.use('/api/candidate', candidateRouter);
 app.use('/api/config', configRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/admin', adminRouter);
 
 // Socket.io: broadcast server time & election config
 io.on('connection', (socket) => {

@@ -118,12 +118,6 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              onClick={() => navigate('/admin')}
-              className="hidden sm:inline-flex px-3 py-2 rounded-lg border border-slate-700 bg-slate-900/80 text-xs sm:text-sm font-medium text-slate-100 hover:border-emerald-400/70 hover:bg-slate-900 transition-colors"
-            >
-              Admin Console
-            </button>
           </div>
         </div>
       </header>

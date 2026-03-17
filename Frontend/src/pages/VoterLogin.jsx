@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
 import axiosClient from '../utils/axiosClient';
 
 export default function VoterLogin() {
@@ -45,13 +45,22 @@ export default function VoterLogin() {
 
       {/* Header */}
       <header className="border-b border-slate-800/60 bg-slate-950/50 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <button
             onClick={() => navigate('/')}
             className="flex items-center gap-2 text-slate-400 hover:text-emerald-400 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             <span className="font-medium">Back to Intro</span>
+          </button>
+
+          <button
+            onClick={() => navigate('/admin-login')}
+            title="Admin Panel"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-900/80 text-xs text-slate-400 hover:text-rose-400 hover:border-rose-500/40 transition-colors"
+          >
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Admin
           </button>
         </div>
       </header>
