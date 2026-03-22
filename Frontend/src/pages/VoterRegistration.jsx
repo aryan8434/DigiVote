@@ -4,7 +4,7 @@ import axiosClient from '../utils/axiosClient';
 import { useLanguage } from '../contexts/LanguageContext';
 import FingerprintSimulator from '../components/FingerprintSimulator';
 import HardwareFingerprintCapture from '../components/HardwareFingerprintCapture';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, User, Calendar, MapPin, Hash, Phone, ShieldCheck } from 'lucide-react';
 
 export default function VoterRegistration() {
   const navigate = useNavigate();
@@ -72,214 +72,267 @@ export default function VoterRegistration() {
     }
   };
 
+  const inputClasses = "w-full px-4 py-3 bg-slate-950/50 border border-slate-800 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600 text-slate-100 shadow-inner";
+  const labelClasses = "block text-sm font-medium text-slate-400 mb-2 mt-1";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-emerald-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-slate-950 text-slate-50 py-12 px-4 relative overflow-hidden">
+      {/* Background Decorative Glows */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none" />
+
+      <div className="max-w-3xl mx-auto relative z-10">
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-slate-600 hover:text-emerald-700 mb-6"
+          className="flex items-center gap-2 text-slate-400 hover:text-emerald-400 mb-8 transition-colors group"
         >
-          <ArrowLeft className="w-5 h-5" />
-          Back
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="font-medium uppercase tracking-widest text-xs">Back to Home</span>
         </button>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
-          <h2 className="text-2xl font-bold text-slate-800">Voter Registration</h2>
+        <div className="mb-10">
+          <p className="text-[10px] uppercase tracking-[0.35em] text-emerald-400 font-bold mb-2">Voter Enrollment</p>
+          <h1 className="text-4xl font-semibold tracking-tight text-white mb-2">Registration Portal</h1>
+          <p className="text-slate-400 text-sm max-w-lg">Complete your digital profile to participate in upcoming elections securely.</p>
+        </div>
 
+        <form onSubmit={handleSubmit} className="space-y-8 pb-20">
           {error && (
-            <div className="p-4 rounded-lg bg-rose-100 text-rose-800 border border-rose-200">
+            <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-center text-sm font-medium backdrop-blur-md">
               {error}
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              1. {t.fullName} (as per government ID)
-            </label>
-            <input
-              type="text"
-              value={form.fullName}
-              onChange={(e) => update('fullName', e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              2. {t.fatherHusbandName}
-            </label>
-            <input
-              type="text"
-              value={form.fatherOrHusbandName}
-              onChange={(e) => update('fatherOrHusbandName', e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              3. {t.dateOfBirth} (Age verification)
-            </label>
-            <input
-              type="date"
-              value={form.dateOfBirth}
-              onChange={(e) => update('dateOfBirth', e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">4. {t.gender}</label>
-            <select
-              value={form.gender}
-              onChange={(e) => update('gender', e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-            >
-              <option value="male">{t.male}</option>
-              <option value="female">{t.female}</option>
-              <option value="other">{t.other}</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              5. {t.aadharNumber} (12 digits)
-            </label>
-            <input
-              type="text"
-              value={form.aadhar}
-              onChange={(e) => update('aadhar', e.target.value.replace(/\D/g, '').slice(0, 12))}
-              maxLength={12}
-              required
-              placeholder="Last 4 digits shown for display"
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              6. {t.voterId} (EPIC No.)
-            </label>
-            <input
-              type="text"
-              value={form.voterId}
-              onChange={(e) => update('voterId', e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              7. {t.address} - {t.permanent}
-            </label>
-            <textarea
-              value={form.address.permanent}
-              onChange={(e) => update('address.permanent', e.target.value)}
-              required
-              rows={2}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              {t.address} - {t.current}
-            </label>
-            <textarea
-              value={form.address.current}
-              onChange={(e) => update('address.current', e.target.value)}
-              rows={2}
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              8. Constituency / Ward
-            </label>
-            <div className="grid grid-cols-2 gap-4">
-              <input
-                type="text"
-                placeholder="Constituency"
-                value={form.constituency}
-                onChange={(e) => update('constituency', e.target.value)}
-                required
-                className="px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-              />
-              <input
-                type="text"
-                placeholder="Ward"
-                value={form.ward}
-                onChange={(e) => update('ward', e.target.value)}
-                required
-                className="px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-              />
+          {/* Section 1: Personal Details */}
+          <div className="bg-slate-900/60 border border-slate-700/50 rounded-3xl p-8 backdrop-blur-xl shadow-2xl hover:border-slate-600/50 transition-colors">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
+                <User className="w-6 h-6 text-emerald-400" strokeWidth={1.5} />
+              </div>
+              <h2 className="text-xl font-semibold text-white tracking-tight">Personal Information</h2>
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              9. {t.boothNumber}
-            </label>
-            <input
-              type="text"
-              value={form.booth}
-              onChange={(e) => update('booth', e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              10. {t.contactNumber} (for OTP)
-            </label>
-            <input
-              type="tel"
-              value={form.contact}
-              onChange={(e) => update('contact', e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div className="pt-4 border-t border-slate-200">
-            <h3 className="font-semibold text-slate-800 mb-4">{t.biometricData}</h3>
-            <div className="space-y-6">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <label className={labelClasses}>1. {t.fullName}</label>
+                <input
+                  type="text"
+                  value={form.fullName}
+                  onChange={(e) => update('fullName', e.target.value)}
+                  className={inputClasses}
+                  placeholder="Full name as per government records"
+                  required
+                />
+              </div>
+              
               <div>
-                <p className="text-sm font-medium text-slate-700 mb-2">{t.fingerprintLabel}</p>
-                <div className="space-y-4">
-                  <HardwareFingerprintCapture onHash={setFingerprintHash} />
-                  <div className="text-xs text-slate-500">
-                    If the hardware connection is not available, you can also use the manual
-                    simulator below during development.
-                  </div>
-                  <FingerprintSimulator onHash={setFingerprintHash} />
+                <label className={labelClasses}>2. {t.fatherHusbandName}</label>
+                <input
+                  type="text"
+                  value={form.fatherOrHusbandName}
+                  onChange={(e) => update('fatherOrHusbandName', e.target.value)}
+                  className={inputClasses}
+                  placeholder="Father/Husband Name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className={labelClasses}>3. {t.dateOfBirth}</label>
+                <div className="relative">
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input
+                    type="date"
+                    value={form.dateOfBirth}
+                    onChange={(e) => update('dateOfBirth', e.target.value)}
+                    className={`${inputClasses} pl-11`}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={labelClasses}>4. {t.gender}</label>
+                <select
+                  value={form.gender}
+                  onChange={(e) => update('gender', e.target.value)}
+                  className={inputClasses}
+                >
+                  <option value="male">{t.male}</option>
+                  <option value="female">{t.female}</option>
+                  <option value="other">{t.other}</option>
+                </select>
+              </div>
+
+              <div>
+                <label className={labelClasses}>5. {t.contactNumber}</label>
+                <div className="relative">
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input
+                    type="tel"
+                    value={form.contact}
+                    onChange={(e) => update('contact', e.target.value)}
+                    className={`${inputClasses} pl-11`}
+                    placeholder="Mobile number for OTP"
+                    required
+                  />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200">
-            <Check className="w-6 h-6 text-emerald-600" />
-            <div>
-              <p className="font-medium text-emerald-800">{t.verificationStatus}</p>
-              <p className="text-sm text-emerald-600">
-                {t.documentVerified} • {t.biometricRegistered}
-              </p>
+          {/* Section 2: Identification & Region */}
+          <div className="bg-slate-900/60 border border-slate-700/50 rounded-3xl p-8 backdrop-blur-xl shadow-2xl hover:border-slate-600/50 transition-colors">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
+                <ShieldCheck className="w-6 h-6 text-blue-400" strokeWidth={1.5} />
+              </div>
+              <h2 className="text-xl font-semibold text-white tracking-tight">Identity & Region</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className={labelClasses}>6. {t.aadharNumber}</label>
+                <div className="relative">
+                  <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input
+                    type="text"
+                    value={form.aadhar}
+                    onChange={(e) => update('aadhar', e.target.value.replace(/\D/g, '').slice(0, 12))}
+                    className={`${inputClasses} pl-11`}
+                    placeholder="12-digit Aadhaar Number"
+                    maxLength={12}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={labelClasses}>7. {t.voterId} (EPIC)</label>
+                <div className="relative">
+                  <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input
+                    type="text"
+                    value={form.voterId}
+                    onChange={(e) => update('voterId', e.target.value)}
+                    className={`${inputClasses} pl-11`}
+                    placeholder="EPIC / Voter ID Number"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className={labelClasses}>8. {t.address} - {t.permanent}</label>
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-4 w-4 h-4 text-slate-500" />
+                  <textarea
+                    value={form.address.permanent}
+                    onChange={(e) => update('address.permanent', e.target.value)}
+                    className={`${inputClasses} pl-11 min-h-[80px]`}
+                    placeholder="Enter full permanent residential address"
+                    rows={2}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className={labelClasses}>Constituency</label>
+                <input
+                  type="text"
+                  value={form.constituency}
+                  onChange={(e) => update('constituency', e.target.value)}
+                  className={inputClasses}
+                  placeholder="Region/District"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className={labelClasses}>Ward & Booth</label>
+                <div className="grid grid-cols-2 gap-3">
+                  <input
+                    type="text"
+                    placeholder="Ward"
+                    value={form.ward}
+                    onChange={(e) => update('ward', e.target.value)}
+                    className={inputClasses}
+                    required
+                  />
+                  <input
+                    type="text"
+                    placeholder="Booth"
+                    value={form.booth}
+                    onChange={(e) => update('booth', e.target.value)}
+                    className={inputClasses}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Biometrics */}
+          <div className="bg-slate-900/60 border border-slate-700/50 rounded-3xl p-8 backdrop-blur-xl shadow-2xl hover:border-slate-600/50 transition-colors">
+            <div className="flex items-center gap-4 mb-8">
+              <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl">
+                <Hash className="w-6 h-6 text-indigo-400" strokeWidth={1.5} />
+              </div>
+              <h2 className="text-xl font-semibold text-white tracking-tight">Biometric Data</h2>
+            </div>
+            
+            <div className="space-y-6">
+              <HardwareFingerprintCapture onHash={setFingerprintHash} />
+              
+              <div className="relative py-4">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-slate-800" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-slate-900 px-3 text-slate-500 font-bold tracking-[0.2em]">OR USE SIMULATOR</span>
+                </div>
+              </div>
+
+              <FingerprintSimulator onHash={setFingerprintHash} />
+            </div>
+
+            {/* Verification Status */}
+            <div className={`mt-8 flex items-center gap-4 p-4 rounded-2xl border transition-all duration-500 ${
+              fingerprintHash 
+                ? 'bg-emerald-500/10 border-emerald-500/30 shadow-lg shadow-emerald-500/5' 
+                : 'bg-slate-800/20 border-slate-800 opacity-60 grayscale'
+            }`}>
+              <div className={`p-2 rounded-full ${fingerprintHash ? 'bg-emerald-500 text-slate-950' : 'bg-slate-700 text-slate-500'}`}>
+                <Check className="w-5 h-5 stroke-[3px]" />
+              </div>
+              <div>
+                <p className={`font-bold ${fingerprintHash ? 'text-emerald-400' : 'text-slate-500'}`}>
+                  {fingerprintHash ? 'Biometric Verified' : 'Awaiting Enrollment'}
+                </p>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                  {fingerprintHash ? 'Digital signature registered' : 'Scanner required'}
+                </p>
+              </div>
             </div>
           </div>
 
           <button
             type="submit"
             disabled={!canSubmit || loading}
-            className="w-full py-3 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 disabled:opacity-50 transition"
+            className="w-full py-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xl transition-all shadow-xl shadow-emerald-950/20 active:scale-[0.98] disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed group"
           >
-            {loading ? 'Submitting...' : t.submitRegistration}
+            {loading ? (
+              <span className="flex items-center justify-center gap-3">
+                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Processing Enrollment...
+              </span>
+            ) : (
+              <span className="flex items-center justify-center gap-2">
+                Submit Enrollment
+                <ArrowLeft className="w-5 h-5 rotate-180 group-hover:translate-x-1 transition-transform" />
+              </span>
+            )}
           </button>
         </form>
       </div>

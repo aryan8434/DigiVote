@@ -2,36 +2,55 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../utils/axiosClient';
 import { useLanguage } from '../contexts/LanguageContext';
-import { ArrowLeft, Plus, X } from 'lucide-react';
+import { ArrowLeft, Plus, X, User, Briefcase, Award, Megaphone, Scale, Wallet, Mail, Phone, Globe, Twitter, Facebook, Upload, Image as ImageIcon } from 'lucide-react';
 
-function ArrayInput({ label, values, onChange, placeholder }) {
+function ArrayInput({ label, icon: Icon, values, onChange, placeholder, color = "emerald" }) {
   const add = () => onChange([...values, '']);
   const update = (i, v) => onChange(values.map((x, j) => (j === i ? v : x)));
   const remove = (i) => onChange(values.filter((_, j) => j !== i));
 
+  const colorClass = color === "emerald" ? "text-emerald-400" : "text-indigo-400";
+  const bgClass = color === "emerald" ? "bg-emerald-500/10" : "bg-indigo-500/10";
+
   return (
-    <div>
-      <div className="flex justify-between items-center mb-2">
-        <label className="block text-sm font-medium text-slate-700">{label}</label>
-        <button type="button" onClick={add} className="text-emerald-600 hover:text-emerald-700 flex items-center gap-1 text-sm">
-          <Plus className="w-4 h-4" /> Add
+    <div className="bg-slate-900/40 border border-slate-800/60 rounded-3xl p-6 backdrop-blur-sm">
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-3">
+          <div className={`p-2 ${bgClass} rounded-lg`}>
+            <Icon className={`w-5 h-5 ${colorClass}`} />
+          </div>
+          <label className="block text-sm font-bold text-white tracking-tight uppercase tracking-[0.1em]">{label}</label>
+        </div>
+        <button 
+          type="button" 
+          onClick={add} 
+          className="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 px-3 py-1.5 rounded-xl border border-emerald-500/20 flex items-center gap-1.5 text-xs font-bold transition-all active:scale-95"
+        >
+          <Plus className="w-3.5 h-3.5" strokeWidth={3} /> {values.length === 0 ? 'Add First' : 'Add Item'}
         </button>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-3">
         {values.map((v, i) => (
-          <div key={i} className="flex gap-2">
+          <div key={i} className="flex gap-2 group animate-in slide-in-from-right-2 duration-300">
             <input
               type="text"
               value={v}
               onChange={(e) => update(i, e.target.value)}
               placeholder={placeholder}
-              className="flex-1 px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
+              className="flex-1 px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-slate-700 text-sm font-medium"
             />
-            <button type="button" onClick={() => remove(i)} className="p-2 text-rose-600 hover:bg-rose-50 rounded">
+            <button 
+              type="button" 
+              onClick={() => remove(i)} 
+              className="p-3 text-rose-500 hover:bg-rose-500/10 rounded-xl border border-transparent hover:border-rose-500/20 transition-all"
+            >
               <X className="w-4 h-4" />
             </button>
           </div>
         ))}
+        {values.length === 0 && (
+          <p className="text-center py-4 text-xs text-slate-600 italic">No items added yet.</p>
+        )}
       </div>
     </div>
   );
@@ -59,7 +78,6 @@ export default function CandidateRegistration() {
   });
   const [photoPreview, setPhotoPreview] = useState('');
   const [symbolPreview, setSymbolPreview] = useState('');
-
   const [photoFile, setPhotoFile] = useState(null);
   const [symbolFile, setSymbolFile] = useState(null);
 
@@ -84,17 +102,10 @@ export default function CandidateRegistration() {
         achievements: form.achievements.filter(Boolean),
         promises: form.promises.filter(Boolean),
       };
-      if (payload.education.length === 0 || payload.experience.length === 0 || payload.achievements.length === 0 || payload.promises.length === 0) {
-        setError('Please fill at least one item in Education, Experience, Achievements, and Promises.');
-        setLoading(false);
-        return;
-      }
-
+      
       const formData = new FormData();
       Object.keys(payload).forEach(key => {
-        // Skip URL fields, we'll append the actual files below
         if (key === 'photoURL' || key === 'symbolURL') return;
-        
         if (Array.isArray(payload[key]) || typeof payload[key] === 'object') {
           formData.append(key, JSON.stringify(payload[key]));
         } else {
@@ -122,221 +133,262 @@ export default function CandidateRegistration() {
     }
   };
 
-  const handlePhotoChange = (e) => {
+  const handleFileChange = (e, type) => {
     const file = e.target.files?.[0];
-    if (!file) {
-      setPhotoPreview('');
-      setPhotoFile(null);
-      return;
-    }
+    if (!file) return;
     const localUrl = URL.createObjectURL(file);
-    setPhotoPreview(localUrl);
-    setPhotoFile(file);
+    if (type === 'photo') {
+      setPhotoPreview(localUrl);
+      setPhotoFile(file);
+    } else {
+      setSymbolPreview(localUrl);
+      setSymbolFile(file);
+    }
   };
 
-  const handleSymbolChange = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) {
-      setSymbolPreview('');
-      setSymbolFile(null);
-      return;
-    }
-    const localUrl = URL.createObjectURL(file);
-    setSymbolPreview(localUrl);
-    setSymbolFile(file);
-  };
+  const inputClasses = "w-full px-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 outline-none transition-all placeholder:text-slate-700 text-slate-100";
+  const labelClasses = "block text-xs font-bold text-slate-500 mb-2 uppercase tracking-[0.15em]";
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 to-emerald-50 py-8 px-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen bg-slate-950 text-slate-200 py-12 px-4 relative overflow-hidden">
+      {/* Background Glows */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-40 left-0 w-[500px] h-[500px] bg-indigo-500/5 blur-[120px] rounded-full pointer-events-none" />
+
+      <div className="max-w-4xl mx-auto relative z-10">
         <button
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-slate-600 hover:text-emerald-700 mb-6"
+          className="flex items-center gap-2 text-slate-500 hover:text-emerald-400 mb-8 transition-colors group"
         >
-          <ArrowLeft className="w-5 h-5" />
-          Back
+          <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+          <span className="font-bold uppercase tracking-widest text-[10px]">Portal Exit</span>
         </button>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
-          <h2 className="text-2xl font-bold text-slate-800">Candidate Registration</h2>
+        <div className="mb-12">
+          <p className="text-[10px] uppercase tracking-[0.4em] text-emerald-400 font-bold mb-3">Electoral Presence</p>
+          <h1 className="text-4xl font-extrabold tracking-tight text-white mb-3">Candidate Enrollment</h1>
+          <p className="text-slate-500 max-w-lg leading-relaxed text-sm">Create your public profile. This information will be visible to all voters during the election period.</p>
+        </div>
 
+        <form onSubmit={handleSubmit} className="space-y-10 pb-20">
           {error && (
-            <div className="p-4 rounded-lg bg-rose-100 text-rose-800 border border-rose-200">
+            <div className="p-5 rounded-3xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm font-medium backdrop-blur-md text-center">
               {error}
             </div>
           )}
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Photo</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handlePhotoChange}
-              className="block w-full text-sm text-slate-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
-            />
-            {photoPreview && (
-              <img
-                src={photoPreview}
-                alt="Candidate preview"
-                className="mt-3 w-24 h-24 rounded-full object-cover border border-slate-200"
-              />
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t.name}</label>
-              <input
-                type="text"
-                value={form.name}
-                onChange={(e) => update('name', e.target.value)}
-                required
-                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-              />
+          {/* Identity Section */}
+          <div className="bg-slate-900/60 border border-slate-800/80 rounded-[40px] p-8 backdrop-blur-xl shadow-2xl relative overflow-hidden">
+            <div className="flex items-center gap-4 mb-10">
+               <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl shadow-inner">
+                  <User className="w-6 h-6 text-emerald-400" />
+               </div>
+               <h2 className="text-2xl font-bold text-white tracking-tight">Identity & Profile</h2>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t.party}</label>
-              <input
-                type="text"
-                value={form.partyName}
-                onChange={(e) => update('partyName', e.target.value)}
-                required
-                placeholder="Party name"
-                className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-              />
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-10">
+              {/* Media Uploads */}
+              <div className="md:col-span-4 space-y-8">
+                <div className="text-center">
+                   <p className={labelClasses}>Professional Photo</p>
+                   <div className="relative inline-block group">
+                      <div className="absolute -inset-1 bg-gradient-to-tr from-emerald-500/40 to-blue-500/40 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                      <div className="relative w-32 h-32 rounded-full overflow-hidden border-4 border-slate-800 bg-slate-950 flex items-center justify-center">
+                        {photoPreview ? (
+                          <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                        ) : (
+                          <ImageIcon className="w-10 h-10 text-slate-800" />
+                        )}
+                        <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center cursor-pointer">
+                          <Upload className="w-6 h-6 text-white mb-1" />
+                          <span className="text-[10px] text-white font-bold uppercase">Update</span>
+                          <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'photo')} className="hidden" />
+                        </label>
+                      </div>
+                   </div>
+                </div>
+
+                <div className="text-center">
+                   <p className={labelClasses}>Official Party Symbol</p>
+                   <div className="relative inline-block group">
+                      <div className="absolute -inset-1 bg-gradient-to-tr from-blue-500/40 to-indigo-500/40 rounded-full blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+                      <div className="relative w-28 h-28 rounded-full overflow-hidden border-4 border-slate-800 bg-slate-950 flex items-center justify-center transition-all group-hover:border-indigo-500/40">
+                        {symbolPreview ? (
+                          <img src={symbolPreview} alt="Symbol" className="w-full h-full object-cover" />
+                        ) : (
+                          <Plus className="w-8 h-8 text-slate-800" />
+                        )}
+                        <label className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center cursor-pointer">
+                          <Upload className="w-5 h-5 text-white mb-0.5" />
+                          <span className="text-[10px] text-white font-bold uppercase">Symbol</span>
+                          <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'symbol')} className="hidden" />
+                        </label>
+                      </div>
+                   </div>
+                </div>
+              </div>
+
+              {/* Form Fields */}
+              <div className="md:col-span-8 space-y-6">
+                <div>
+                  <label className={labelClasses}>Legal Name</label>
+                  <input
+                    type="text"
+                    value={form.name}
+                    onChange={(e) => update('name', e.target.value)}
+                    required
+                    className={inputClasses}
+                    placeholder="Candidate full name"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={labelClasses}>Affiliated Party</label>
+                    <input
+                      type="text"
+                      value={form.partyName}
+                      onChange={(e) => update('partyName', e.target.value)}
+                      required
+                      placeholder="e.g. Democratic Alliance"
+                      className={inputClasses}
+                    />
+                  </div>
+                  <div>
+                    <label className={labelClasses}>Constituency</label>
+                    <input
+                      type="text"
+                      value={form.constituency}
+                      onChange={(e) => update('constituency', e.target.value)}
+                      required
+                      className={inputClasses}
+                      placeholder="e.g. Central District"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className={labelClasses}>Running Position</label>
+                  <input
+                    type="text"
+                    value={form.position}
+                    onChange={(e) => update('position', e.target.value)}
+                    required
+                    placeholder="e.g. Member of Parliament"
+                    className={inputClasses}
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Party Symbol</label>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleSymbolChange}
-              className="block w-full text-sm text-slate-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+          {/* Credentials Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <ArrayInput
+              label="Academic Background"
+              icon={Briefcase}
+              values={form.education}
+              onChange={(v) => update('education', v)}
+              placeholder="e.g. PhD in Political Science"
+              color="indigo"
             />
-            {symbolPreview && (
-              <img
-                src={symbolPreview}
-                alt="Symbol preview"
-                className="mt-3 w-16 h-16 object-contain border border-slate-200 bg-white"
-              />
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">{t.position}</label>
-            <input
-              type="text"
-              value={form.position}
-              onChange={(e) => update('position', e.target.value)}
-              required
-              placeholder="e.g. Member of Parliament - Central District"
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
+            <ArrayInput
+              label="Professional Experience"
+              icon={Award}
+              values={form.experience}
+              onChange={(v) => update('experience', v)}
+              placeholder="e.g. 15 Years Public Service"
+              color="indigo"
             />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Constituency</label>
-            <input
-              type="text"
-              value={form.constituency}
-              onChange={(e) => update('constituency', e.target.value)}
-              required
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
+            <ArrayInput
+              label="Core Achievements"
+              icon={Award}
+              values={form.achievements}
+              onChange={(v) => update('achievements', v)}
+              placeholder="e.g. Community Health Initiative"
+            />
+            <ArrayInput
+              label="Election Manifesto"
+              icon={Megaphone}
+              values={form.promises}
+              onChange={(v) => update('promises', v)}
+              placeholder="e.g. Transparent Budgeting"
             />
           </div>
 
-          <ArrayInput
-            label="📚 Education"
-            values={form.education}
-            onChange={(v) => update('education', v)}
-            placeholder="e.g. Master's in Public Administration"
-          />
-
-          <ArrayInput
-            label="Experience"
-            values={form.experience}
-            onChange={(v) => update('experience', v)}
-            placeholder="e.g. 10 years as Council Member"
-          />
-
-          <ArrayInput
-            label="🏆 Key Achievements"
-            values={form.achievements}
-            onChange={(v) => update('achievements', v)}
-            placeholder="e.g. Built 3 new schools"
-          />
-
-          <ArrayInput
-            label="📢 Main Promises"
-            values={form.promises}
-            onChange={(v) => update('promises', v)}
-            placeholder="e.g. Free education for all"
-          />
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">⚖️ {t.criminalRecord}</label>
-            <input
-              type="text"
-              value={form.criminalRecord}
-              onChange={(e) => update('criminalRecord', e.target.value)}
-              placeholder="NONE or details"
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-            />
+          {/* Legal / Financial Section */}
+          <div className="bg-slate-900/60 border border-slate-800/80 rounded-[40px] p-8 backdrop-blur-xl shadow-2xl">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                   <div className="flex items-center gap-3 mb-6">
+                      <Scale className="w-5 h-5 text-rose-400" />
+                      <h3 className="text-lg font-bold text-white tracking-tight">Legal Disclosures</h3>
+                   </div>
+                   <label className={labelClasses}>Criminal Record History</label>
+                   <input
+                     type="text"
+                     value={form.criminalRecord}
+                     onChange={(e) => update('criminalRecord', e.target.value)}
+                     placeholder="NONE or Case details"
+                     className={`${inputClasses} border-rose-500/20 focus:ring-rose-500/50`}
+                   />
+                </div>
+                <div>
+                   <div className="flex items-center gap-3 mb-6">
+                      <Wallet className="w-5 h-5 text-emerald-400" />
+                      <h3 className="text-lg font-bold text-white tracking-tight">Asset Declaration</h3>
+                   </div>
+                   <label className={labelClasses}>Declared Net Worth</label>
+                   <input
+                     type="text"
+                     value={form.assetsDeclared}
+                     onChange={(e) => update('assetsDeclared', e.target.value)}
+                     placeholder="e.g. ₹75,00,000 Total Assets"
+                     className={inputClasses}
+                   />
+                </div>
+             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">💰 {t.assetsDeclared}</label>
-            <input
-              type="text"
-              value={form.assetsDeclared}
-              onChange={(e) => update('assetsDeclared', e.target.value)}
-              placeholder="e.g. ₹50 Lakhs"
-              className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-            />
-          </div>
-
-          <div className="border-t border-slate-200 pt-4">
-            <h3 className="font-semibold text-slate-800 mb-4">📞 {t.contact}</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <input
-                type="email"
-                placeholder="Email"
-                value={form.contact.email}
-                onChange={(e) => update('contact.email', e.target.value)}
-                className="px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-              />
-              <input
-                type="tel"
-                placeholder="Phone"
-                value={form.contact.phone}
-                onChange={(e) => update('contact.phone', e.target.value)}
-                className="px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500"
-              />
-              <input
-                type="text"
-                placeholder="Facebook"
-                value={form.contact.facebook}
-                onChange={(e) => update('contact.facebook', e.target.value)}
-                className="px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 col-span-2"
-              />
-              <input
-                type="text"
-                placeholder="Twitter handle"
-                value={form.contact.twitter}
-                onChange={(e) => update('contact.twitter', e.target.value)}
-                className="px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-emerald-500 col-span-2"
-              />
-            </div>
+          {/* Contact Methods */}
+          <div className="bg-slate-900/60 border border-slate-800/80 rounded-[40px] p-8 backdrop-blur-xl shadow-2xl">
+             <div className="flex items-center gap-4 mb-8">
+                <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
+                   <Phone className="w-6 h-6 text-blue-400" />
+                </div>
+                <h2 className="text-xl font-bold text-white tracking-tight">Public Contact Channels</h2>
+             </div>
+             
+             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+               <div className="relative group">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 transition-colors group-focus-within:text-blue-400" />
+                  <input type="email" placeholder="Official Email" value={form.contact.email} onChange={(e) => update('contact.email', e.target.value)} className={`${inputClasses} pl-12`} />
+               </div>
+               <div className="relative group">
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 transition-colors group-focus-within:text-blue-400" />
+                  <input type="tel" placeholder="Public Phone" value={form.contact.phone} onChange={(e) => update('contact.phone', e.target.value)} className={`${inputClasses} pl-12`} />
+               </div>
+               <div className="relative group col-span-full">
+                  <Facebook className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 transition-colors group-focus-within:text-blue-400" />
+                  <input type="text" placeholder="Facebook Profile URL" value={form.contact.facebook} onChange={(e) => update('contact.facebook', e.target.value)} className={`${inputClasses} pl-12`} />
+               </div>
+               <div className="relative group col-span-full">
+                  <Twitter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 transition-colors group-focus-within:text-blue-400" />
+                  <input type="text" placeholder="Twitter Handle" value={form.contact.twitter} onChange={(e) => update('contact.twitter', e.target.value)} className={`${inputClasses} pl-12`} />
+               </div>
+             </div>
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-lg bg-emerald-600 text-white font-medium hover:bg-emerald-700 disabled:opacity-50 transition"
+            className="w-full py-6 rounded-[32px] bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xl transition-all shadow-2xl shadow-emerald-900/40 active:scale-[0.98] disabled:opacity-50 group overflow-hidden relative"
           >
-            {loading ? 'Submitting...' : 'Submit Registration'}
+            <div className="relative z-10 flex items-center justify-center gap-3">
+               {loading ? 'Processing Protocol...' : 'Submit Verification Data'}
+               {!loading && <ArrowLeft className="w-6 h-6 rotate-180 group-hover:translate-x-2 transition-transform duration-500" />}
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/0 via-emerald-400/20 to-emerald-400/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
           </button>
         </form>
       </div>

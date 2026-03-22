@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Fingerprint, PlugZap } from 'lucide-react';
+import { Fingerprint, PlugZap, CheckCircle2, AlertCircle, Cpu } from 'lucide-react';
 import { sha256 } from '../utils/sha256';
 
 export default function HardwareFingerprintCapture({ onHash }) {
   const [supported, setSupported] = useState(true);
   const [port, setPort] = useState(null);
   const [connecting, setConnecting] = useState(false);
-  const [status, setStatus] = useState('Not connected');
+  const [status, setStatus] = useState('Device offline');
   const [mode, setMode] = useState('Register'); // or 'Voting'
   const [done, setDone] = useState(false);
 
@@ -19,15 +19,15 @@ export default function HardwareFingerprintCapture({ onHash }) {
   const connect = async () => {
     try {
       setConnecting(true);
-      setStatus('Requesting serial device...');
+      setStatus('Waiting for device selection...');
       const selectedPort = await navigator.serial.requestPort();
       await selectedPort.open({ baudRate: 9600 });
       setPort(selectedPort);
-      setStatus('Connected to fingerprint device');
+      setStatus('Hardware session active');
       readLoop(selectedPort);
     } catch (err) {
       console.error(err);
-      setStatus('Failed to connect to device');
+      setStatus('Connection failed');
     } finally {
       setConnecting(false);
     }
@@ -47,7 +47,6 @@ export default function HardwareFingerprintCapture({ onHash }) {
         if (readerDone) break;
         buffer += value;
         let newlineIndex;
-        // process line by line
         while ((newlineIndex = buffer.indexOf('\n')) >= 0) {
           const line = buffer.slice(0, newlineIndex).trim();
           buffer = buffer.slice(newlineIndex + 1);
@@ -65,9 +64,8 @@ export default function HardwareFingerprintCapture({ onHash }) {
 
   const handleLineFromDevice = async (line) => {
     console.log('FP device:', line);
-    // Example lines: "FPID_23"
     if (line.startsWith('FPID_')) {
-      setStatus(`Fingerprint captured from device (${line})`);
+      setStatus(`Data received: ${line}`);
       const hash = await sha256(line);
       onHash?.(hash);
       setDone(true);
@@ -76,7 +74,7 @@ export default function HardwareFingerprintCapture({ onHash }) {
 
   const sendCommand = async (command) => {
     if (!port) {
-      setStatus('Connect device first');
+      setStatus('Connect hardware first');
       return;
     }
     try {
@@ -84,83 +82,90 @@ export default function HardwareFingerprintCapture({ onHash }) {
       const writer = port.writable.getWriter();
       await writer.write(textEncoder.encode(`${command}\n`));
       writer.releaseLock();
-      setStatus(`Sent "${command}" to device. Follow sensor instructions.`);
+      setStatus(`Command "${command}" sent. Interacting with sensor...`);
     } catch (err) {
       console.error(err);
-      setStatus('Failed to send command to device');
+      setStatus('Command transmission failed');
     }
   };
 
   if (!supported) {
     return (
-      <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-sm text-rose-700">
-        Your browser does not support the Web Serial API. Please use a recent version of Chrome or
-        Edge to connect the fingerprint sensor, or enter the fingerprint ID manually.
+      <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-sm text-rose-400 backdrop-blur-md flex items-start gap-3">
+        <AlertCircle className="w-5 h-5 shrink-0" />
+        <p>
+          Browser version does not support Web Serial API. Please use Chrome or Edge for hardware integration.
+        </p>
       </div>
     );
   }
 
   if (done) {
     return (
-      <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-200">
-        <Fingerprint className="w-10 h-10 text-emerald-600" />
+      <div className="flex items-center gap-4 p-5 rounded-3xl bg-emerald-500/10 border border-emerald-400/20 backdrop-blur-xl animate-in fade-in zoom-in duration-300">
+        <div className="p-3 bg-emerald-500/20 rounded-2xl">
+          <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+        </div>
         <div>
-          <p className="font-medium text-emerald-800">Fingerprint captured from hardware</p>
-          <p className="text-sm text-emerald-600">
-            Device ID was hashed and stored securely for this voter.
-          </p>
+          <p className="font-bold text-white text-lg tracking-tight">Biometric Data Acquired</p>
+          <p className="text-sm text-emerald-400/80 font-medium">Verified via external hardware sensor</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3 p-4 rounded-xl bg-slate-100 border border-slate-200">
-        <PlugZap className="w-8 h-8 text-slate-600" />
+    <div className="space-y-6">
+      <div className="flex items-start gap-4 p-5 rounded-3xl bg-slate-950/40 border border-slate-800/60 backdrop-blur-md relative overflow-hidden group">
+        <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/40" />
+        <div className="p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl">
+          <Cpu className="w-6 h-6 text-emerald-400" />
+        </div>
         <div className="flex-1">
-          <p className="text-sm font-medium text-slate-800 mb-1">
-            Connect biometric fingerprint sensor (Arduino)
-          </p>
-          <p className="text-xs text-slate-500">
-            Connect your Arduino fingerprint module via USB. This tool will send commands like
-            &quot;Register&quot; and &quot;Voting&quot; and wait for an ID such as &quot;FPID_23&quot; from the serial
-            output.
+          <p className="text-sm font-bold text-white mb-1 uppercase tracking-wider">Hardware Interface</p>
+          <p className="text-xs text-slate-400 leading-relaxed max-w-md">
+            Compatible with DigiVote external biometric modules. Ensure your USB-Serial device is recognized before connecting.
           </p>
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3 items-center">
-        <button
-          type="button"
-          onClick={connect}
-          disabled={!!port || connecting}
-          className="px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 disabled:opacity-60 transition"
-        >
-          {port ? 'Device connected' : connecting ? 'Connecting…' : 'Connect device'}
-        </button>
+      <div className="flex flex-wrap gap-4 items-center">
+        {!port ? (
+          <button
+            type="button"
+            onClick={connect}
+            disabled={connecting}
+            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold transition-all shadow-lg shadow-emerald-950/20 active:scale-95 disabled:opacity-50"
+          >
+            <PlugZap className="w-4 h-4" />
+            {connecting ? 'Initializing...' : 'Initialize Device'}
+          </button>
+        ) : (
+          <div className="flex items-center gap-3">
+            <select
+              value={mode}
+              onChange={(e) => setMode(e.target.value)}
+              className="px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white font-semibold focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+            >
+              <option value="Register">Registration Mode</option>
+              <option value="Voting">Verification Mode</option>
+            </select>
 
-        <select
-          value={mode}
-          onChange={(e) => setMode(e.target.value)}
-          className="px-3 py-2 rounded-lg border border-slate-300 text-sm"
-        >
-          <option value="Register">Register (enroll)</option>
-          <option value="Voting">Voting (verify)</option>
-        </select>
+            <button
+              type="button"
+              onClick={() => sendCommand(mode)}
+              className="px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-bold transition-all shadow-lg shadow-indigo-950/20 active:scale-95"
+            >
+              Start {mode}
+            </button>
+          </div>
+        )}
 
-        <button
-          type="button"
-          onClick={() => sendCommand(mode)}
-          disabled={!port}
-          className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 transition"
-        >
-          Start {mode.toLowerCase()}
-        </button>
+        <div className="flex items-center gap-2 ml-auto">
+          <div className={`h-2 w-2 rounded-full ${port ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`} />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{status}</p>
+        </div>
       </div>
-
-      <p className="text-xs text-slate-500">{status}</p>
     </div>
   );
 }
-
