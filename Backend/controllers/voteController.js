@@ -161,4 +161,88 @@ async function verifyVoterForAuth(req, res) {
   }
 }
 
-module.exports = { castVote, verifyVoterForAuth };
+/**
+ * Get searchable constituency names for results page
+ */
+async function getResultConstituencies(req, res) {
+  try {
+    const [candidateConstituencies, voteConstituencies] = await Promise.all([
+      Candidate.distinct('constituency'),
+      Vote.distinct('constituency'),
+    ]);
+
+    const list = Array.from(
+      new Set([...(candidateConstituencies || []), ...(voteConstituencies || [])])
+    )
+      .filter(Boolean)
+      .map((item) => String(item).trim())
+      .sort((a, b) => a.localeCompare(b));
+
+    res.json({ success: true, constituencies: list });
+  } catch (err) {
+    console.error('getResultConstituencies error:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch constituencies.' });
+  }
+}
+
+/**
+ * Get constituency result with winner and all candidate vote counts
+ */
+async function getConstituencyResult(req, res) {
+  try {
+    const constituency = String(req.query.constituency || '').trim();
+    if (!constituency) {
+      return res.status(400).json({
+        success: false,
+        message: 'constituency query parameter is required.',
+      });
+    }
+
+    const candidates = await Candidate.find({ constituency })
+      .select('name partyName photoURL symbolURL position constituency')
+      .lean();
+
+    if (!candidates.length) {
+      return res.status(404).json({
+        success: false,
+        message: 'No candidates found for this constituency.',
+      });
+    }
+
+    const voteCounts = await Vote.aggregate([
+      { $match: { constituency } },
+      { $group: { _id: '$candidateId', votes: { $sum: 1 } } },
+    ]);
+
+    const countByCandidate = new Map(
+      voteCounts.map((item) => [String(item._id), Number(item.votes || 0)])
+    );
+
+    const candidateResults = candidates
+      .map((candidate) => ({
+        ...candidate,
+        voteCount: countByCandidate.get(String(candidate._id)) || 0,
+      }))
+      .sort((a, b) => b.voteCount - a.voteCount || a.name.localeCompare(b.name));
+
+    const winner = candidateResults[0] || null;
+
+    res.json({
+      success: true,
+      constituency,
+      totalVotesCast: candidateResults.reduce((sum, c) => sum + c.voteCount, 0),
+      winner,
+      candidates: candidateResults,
+    });
+  } catch (err) {
+    console.error('getConstituencyResult error:', err);
+    res.status(500).json({ success: false, message: 'Failed to fetch election result.' });
+  }
+}
+
+module.exports = {
+  castVote,
+  verifyVoterForAuth,
+  getResultConstituencies,
+  getConstituencyResult,
+};

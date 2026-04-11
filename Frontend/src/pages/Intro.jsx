@@ -50,6 +50,12 @@ export default function Intro() {
                 Vote Now
               </button>
               <button
+                onClick={() => navigate('/results')}
+                className="px-8 py-4 rounded-xl bg-blue-600 text-white font-bold text-lg hover:bg-blue-500 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(37,99,235,0.35)]"
+              >
+                Result
+              </button>
+              <button
                 onClick={() => navigate('/help-desk')}
                 className="px-8 py-4 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 font-bold text-lg hover:border-emerald-500/50 hover:bg-slate-800 transition-all"
               >
