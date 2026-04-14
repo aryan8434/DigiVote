@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Voter = require("../model/Voter");
 const Candidate = require("../model/Candidate");
 const { Vote } = require("../model/Vote");
-const Config = require('../model/config');
+const Config = require("../model/config");
 const { hashVoterId, verifyFingerprintHash } = require("../utils/cryptoUtils");
 
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
@@ -237,6 +237,160 @@ async function verifyVoterForAuth(req, res) {
 }
 
 /**
+ * Verify voter by voterId for mobile voting flow
+ */
+async function verifyVoterIdForAuth(req, res) {
+  try {
+    const voterId = String(req.params.voterId || "").trim();
+    if (!voterId) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing voterId.",
+      });
+    }
+
+    const voter = await Voter.findOne({ voterId, isVerified: true })
+      .select("fullName voterId constituency ward lastVotedAt")
+      .lean();
+
+    if (!voter) {
+      return res.status(404).json({
+        success: false,
+        message: "Voter ID not found or not verified.",
+      });
+    }
+
+    const now = new Date();
+    const canVote =
+      !voter.lastVotedAt || now - new Date(voter.lastVotedAt) >= THREE_DAYS_MS;
+
+    res.json({
+      success: true,
+      canVote,
+      voter: {
+        fullName: voter.fullName,
+        voterId: voter.voterId,
+        constituency: voter.constituency,
+        ward: voter.ward,
+      },
+      message: canVote
+        ? "Voter verified. Proceed to candidate selection."
+        : "You have already voted. Cannot vote again for 3 days.",
+    });
+  } catch (err) {
+    console.error("verifyVoterIdForAuth error:", err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+}
+
+/**
+ * Cast vote by voterId (mobile voting flow)
+ */
+async function castVoteByVoterId(req, res) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const voterId = String(req.body?.voterId || "").trim();
+    const candidateId = String(req.body?.candidateId || "").trim();
+
+    if (!voterId || !candidateId) {
+      await session.abortTransaction();
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields: voterId, candidateId.",
+      });
+    }
+
+    const voter = await Voter.findOne({ voterId, isVerified: true })
+      .session(session)
+      .lean();
+    if (!voter) {
+      await session.abortTransaction();
+      return res.status(404).json({
+        success: false,
+        message: "Voter not found or not verified.",
+      });
+    }
+
+    const now = new Date();
+    if (
+      voter.lastVotedAt &&
+      now - new Date(voter.lastVotedAt) < THREE_DAYS_MS
+    ) {
+      await session.abortTransaction();
+      return res.status(403).json({
+        success: false,
+        message: "You have already voted. You cannot vote again for 3 days.",
+      });
+    }
+
+    const candidate = await Candidate.findById(candidateId)
+      .session(session)
+      .lean();
+    if (!candidate || candidate.constituency !== voter.constituency) {
+      await session.abortTransaction();
+      return res.status(400).json({
+        success: false,
+        message: "Invalid candidate for your constituency.",
+      });
+    }
+
+    const voterIdHash = hashVoterId(voter._id.toString());
+    const existingVote = await Vote.findOne({
+      voterIdHash,
+      constituency: voter.constituency,
+      ward: voter.ward,
+    })
+      .session(session)
+      .lean();
+
+    if (existingVote) {
+      await session.abortTransaction();
+      return res.status(409).json({
+        success: false,
+        message: "You have already voted in this election.",
+      });
+    }
+
+    const lastVote = await Vote.findOne()
+      .sort({ _id: -1 })
+      .session(session)
+      .lean();
+    const previousBlockHash = lastVote ? lastVote.currentBlockHash : "0";
+
+    const voteDoc = new Vote({
+      candidateId: new mongoose.Types.ObjectId(candidateId),
+      voterIdHash,
+      constituency: voter.constituency,
+      ward: voter.ward,
+      previousBlockHash,
+    });
+    await voteDoc.save({ session });
+
+    await Voter.updateOne(
+      { _id: voter._id },
+      { $set: { lastVotedAt: now } },
+      { session },
+    );
+
+    await session.commitTransaction();
+    res.status(201).json({
+      success: true,
+      message: "Vote recorded successfully.",
+    });
+  } catch (err) {
+    if (session) await session.abortTransaction();
+    console.error("castVoteByVoterId error:", err);
+    res.status(500).json({
+      success: false,
+      message: err.message || "Failed to record vote. Please try again.",
+    });
+  } finally {
+    session.endSession();
+  }
+}
+
+/**
  * Get searchable constituency names for results page
  */
 async function getResultConstituencies(req, res) {
@@ -327,6 +481,8 @@ async function getConstituencyResult(req, res) {
 module.exports = {
   castVote,
   verifyVoterForAuth,
+  verifyVoterIdForAuth,
+  castVoteByVoterId,
   getResultConstituencies,
   getConstituencyResult,
 };
