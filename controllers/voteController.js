@@ -327,11 +327,11 @@ async function castVoteByVoterId(req, res) {
     const candidate = await Candidate.findById(candidateId)
       .session(session)
       .lean();
-    if (!candidate || candidate.constituency !== voter.constituency) {
+      if (!candidate) {
       await session.abortTransaction();
       return res.status(400).json({
         success: false,
-        message: "Invalid candidate for your constituency.",
+          message: "Invalid candidate selected.",
       });
     }
 
