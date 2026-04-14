@@ -16,7 +16,7 @@ const voteRouter = require('./routes/voteRoute');
 const voterRouter = require('./routes/voterRoute');
 const candidateRouter = require('./routes/candidateRoute');
 const configRouter = require('./routes/configRoute');
-const uploadRouter = require('./routes/uploadRoute');
+const uploadRouter = require('./routes/uploadroute');
 const adminRouter = require('./routes/adminRoute');
 const { getServerTime } = require('./middleware/timeGuard');
 
@@ -71,7 +71,7 @@ app.use('/api/admin', adminRouter);
 io.on('connection', (socket) => {
   socket.on('getTime', async () => {
     try {
-      const Config = require('./model/Config');
+      const Config = require('./model/config');
       const config = await Config.findOne().sort({ createdAt: -1 }).lean();
       socket.emit('timeUpdate', {
         serverTime: new Date().toISOString(),

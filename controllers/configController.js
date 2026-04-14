@@ -1,4 +1,4 @@
-const Config = require('../model/Config');
+const Config = require('../model/config');
 
 /**
  * Get current election config (public)

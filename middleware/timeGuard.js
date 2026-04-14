@@ -1,4 +1,4 @@
-const Config = require('../model/Config');
+const Config = require('../model/config');
 
 // Voter registration is always open — no time check needed
 async function checkRegistrationOpen(req, res, next) {

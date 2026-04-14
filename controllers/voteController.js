@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Voter = require("../model/Voter");
 const Candidate = require("../model/Candidate");
 const { Vote } = require("../model/Vote");
-const Config = require("../model/Config");
+const Config = require('../model/config');
 const { hashVoterId, verifyFingerprintHash } = require("../utils/cryptoUtils");
 
 const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
