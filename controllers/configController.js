@@ -1,4 +1,4 @@
-const Config = require('../model/config');
+const Config = require("../model/config");
 
 /**
  * Get current election config (public)
@@ -10,7 +10,7 @@ async function getConfig(req, res) {
       return res.json({
         success: true,
         config: {
-          electionStatus: 'registration',
+          electionStatus: "registration",
           startTime: null,
           endTime: null,
           candidateRegStart: null,
@@ -31,7 +31,7 @@ async function getConfig(req, res) {
       serverTime: new Date().toISOString(),
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 }
 
@@ -40,19 +40,31 @@ async function getConfig(req, res) {
  */
 async function updateConfig(req, res) {
   try {
-    const { electionStatus, startTime, endTime, candidateRegStart, candidateRegEnd } = req.body;
+    const {
+      electionStatus,
+      startTime,
+      endTime,
+      candidateRegStart,
+      candidateRegEnd,
+    } = req.body;
     const config = await Config.findOneAndUpdate(
       {},
       {
         $set: {
           ...(electionStatus && { electionStatus }),
-          ...(startTime ? { startTime: new Date(startTime) } : { startTime: null }),
+          ...(startTime
+            ? { startTime: new Date(startTime) }
+            : { startTime: null }),
           ...(endTime ? { endTime: new Date(endTime) } : { endTime: null }),
-          ...(candidateRegStart ? { candidateRegStart: new Date(candidateRegStart) } : { candidateRegStart: null }),
-          ...(candidateRegEnd ? { candidateRegEnd: new Date(candidateRegEnd) } : { candidateRegEnd: null }),
+          ...(candidateRegStart
+            ? { candidateRegStart: new Date(candidateRegStart) }
+            : { candidateRegStart: null }),
+          ...(candidateRegEnd
+            ? { candidateRegEnd: new Date(candidateRegEnd) }
+            : { candidateRegEnd: null }),
         },
       },
-      { upsert: true, new: true }
+      { upsert: true, new: true },
     );
     res.json({
       success: true,
@@ -65,7 +77,7 @@ async function updateConfig(req, res) {
       },
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Update failed' });
+    res.status(500).json({ success: false, message: "Update failed" });
   }
 }
 
