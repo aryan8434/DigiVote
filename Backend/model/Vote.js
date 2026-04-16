@@ -15,12 +15,12 @@ const voteSchema = new Schema(
     }, // SHA-256 of voterId for anonymity
     constituency: {
       type: String,
-      required: true,
+      default: '',
       trim: true,
     },
     ward: {
       type: String,
-      required: true,
+      default: '',
       trim: true,
     },
     timestamp: {

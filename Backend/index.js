@@ -57,7 +57,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
-// Avoid noisy 404s in browsers when no favicon file is bundled.
+// Avoid noisy browser 404 for favicon.
 app.get("/favicon.ico", (req, res) => {
   res.status(204).end();
 });

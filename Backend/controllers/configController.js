@@ -23,6 +23,10 @@ const FALLBACK_CONFIG_PATH = path.join(
   "../config/localElectionConfig.json",
 );
 
+function isDbConnected() {
+  return mongoose.connection.readyState === 1;
+}
+
 function normalizeDateForStorage(value) {
   if (!value) return null;
   if (value instanceof Date) return value.toISOString();
@@ -39,13 +43,13 @@ function normalizeConfigForStorage(config) {
   };
 }
 
-function loadLocalFallbackConfig() {
+function readFallbackConfig() {
   try {
     if (!fs.existsSync(FALLBACK_CONFIG_PATH)) {
       return { ...DEFAULT_CONFIG };
     }
-    const raw = fs.readFileSync(FALLBACK_CONFIG_PATH, "utf8");
-    if (!raw.trim()) {
+    const raw = fs.readFileSync(FALLBACK_CONFIG_PATH, "utf8").trim();
+    if (!raw) {
       return { ...DEFAULT_CONFIG };
     }
     const parsed = JSON.parse(raw);
@@ -61,17 +65,33 @@ function loadLocalFallbackConfig() {
   }
 }
 
-function saveLocalFallbackConfig(config) {
-  const serialized = normalizeConfigForStorage(config);
-  fs.writeFileSync(FALLBACK_CONFIG_PATH, JSON.stringify(serialized, null, 2));
-  return serialized;
+function writeFallbackConfig(config) {
+  const normalized = normalizeConfigForStorage(config);
+  fs.writeFileSync(FALLBACK_CONFIG_PATH, JSON.stringify(normalized, null, 2));
+  return normalized;
 }
 
-function isDbConnected() {
-  return mongoose.connection.readyState === 1;
+function mergeConfig(base, updates) {
+  return {
+    electionStatus:
+      updates.electionStatus !== undefined
+        ? updates.electionStatus
+        : base.electionStatus,
+    startTime:
+      updates.startTime !== undefined ? updates.startTime : base.startTime,
+    endTime: updates.endTime !== undefined ? updates.endTime : base.endTime,
+    candidateRegStart:
+      updates.candidateRegStart !== undefined
+        ? updates.candidateRegStart
+        : base.candidateRegStart,
+    candidateRegEnd:
+      updates.candidateRegEnd !== undefined
+        ? updates.candidateRegEnd
+        : base.candidateRegEnd,
+  };
 }
 
-let localFallbackConfig = loadLocalFallbackConfig();
+let localFallbackConfig = readFallbackConfig();
 
 function parseOptionalDate(raw, fieldName) {
   if (raw === undefined) {
@@ -100,26 +120,6 @@ function shapeConfig(config) {
     endTime: config.endTime,
     candidateRegStart: config.candidateRegStart,
     candidateRegEnd: config.candidateRegEnd,
-  };
-}
-
-function mergeConfig(base, updates) {
-  return {
-    electionStatus:
-      updates.electionStatus !== undefined
-        ? updates.electionStatus
-        : base.electionStatus,
-    startTime:
-      updates.startTime !== undefined ? updates.startTime : base.startTime,
-    endTime: updates.endTime !== undefined ? updates.endTime : base.endTime,
-    candidateRegStart:
-      updates.candidateRegStart !== undefined
-        ? updates.candidateRegStart
-        : base.candidateRegStart,
-    candidateRegEnd:
-      updates.candidateRegEnd !== undefined
-        ? updates.candidateRegEnd
-        : base.candidateRegEnd,
   };
 }
 
@@ -153,7 +153,7 @@ async function getConfig(req, res) {
       });
     }
 
-    localFallbackConfig = normalizeConfigForStorage(shapeConfig(config));
+    localFallbackConfig = writeFallbackConfig(shapeConfig(config));
 
     res.json({
       success: true,
@@ -261,9 +261,10 @@ async function updateConfig(req, res) {
     };
 
     if (!isDbConnected()) {
-      localFallbackConfig = saveLocalFallbackConfig(
+      localFallbackConfig = writeFallbackConfig(
         mergeConfig(localFallbackConfig, updateFields),
       );
+
       return res.json({
         success: true,
         config: localFallbackConfig,
@@ -283,7 +284,7 @@ async function updateConfig(req, res) {
       },
     );
 
-    localFallbackConfig = saveLocalFallbackConfig(shapeConfig(config));
+    localFallbackConfig = writeFallbackConfig(shapeConfig(config));
 
     res.json({
       success: true,

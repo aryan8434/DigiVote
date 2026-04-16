@@ -1,7 +1,7 @@
 {
-  "electionStatus": "voting",
-  "startTime": "2026-04-11T00:11:00.000Z",
-  "endTime": "2026-04-22T00:11:00.000Z",
-  "candidateRegStart": "2026-04-11T00:11:00.000Z",
-  "candidateRegEnd": "2026-05-11T00:11:00.000Z"
+  "electionStatus": "registration",
+  "startTime": "2025-11-11T05:41:00.000Z",
+  "endTime": "2026-07-12T05:41:00.000Z",
+  "candidateRegStart": "2025-11-11T05:41:00.000Z",
+  "candidateRegEnd": "2026-07-11T05:41:00.000Z"
 }

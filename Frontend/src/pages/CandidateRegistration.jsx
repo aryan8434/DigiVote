@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../utils/axiosClient';
 import { useLanguage } from '../contexts/LanguageContext';
-import { ArrowLeft, Plus, X, User, Briefcase, Award, Megaphone, Scale, Wallet, Mail, Phone, Globe, Twitter, Facebook, Upload, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Plus, X, User, Briefcase, Award, Megaphone, Scale, Wallet, Upload, Image as ImageIcon } from 'lucide-react';
 
 function ArrayInput({ label, icon: Icon, values, onChange, placeholder, color = "emerald" }) {
   const add = () => onChange([...values, '']);
@@ -74,7 +74,6 @@ export default function CandidateRegistration() {
     promises: [''],
     criminalRecord: 'NONE',
     assetsDeclared: '',
-    contact: { email: '', phone: '', facebook: '', twitter: '' },
   });
   const [photoPreview, setPhotoPreview] = useState('');
   const [symbolPreview, setSymbolPreview] = useState('');
@@ -82,12 +81,7 @@ export default function CandidateRegistration() {
   const [symbolFile, setSymbolFile] = useState(null);
 
   const update = (key, value) => {
-    if (key.startsWith('contact.')) {
-      const sub = key.split('.')[1];
-      setForm((f) => ({ ...f, contact: { ...f.contact, [sub]: value } }));
-    } else {
-      setForm((f) => ({ ...f, [key]: value }));
-    }
+    setForm((f) => ({ ...f, [key]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -236,7 +230,6 @@ export default function CandidateRegistration() {
                     type="text"
                     value={form.name}
                     onChange={(e) => update('name', e.target.value)}
-                    required
                     className={inputClasses}
                     placeholder="Candidate full name"
                   />
@@ -249,7 +242,6 @@ export default function CandidateRegistration() {
                       type="text"
                       value={form.partyName}
                       onChange={(e) => update('partyName', e.target.value)}
-                      required
                       placeholder="e.g. Democratic Alliance"
                       className={inputClasses}
                     />
@@ -260,7 +252,6 @@ export default function CandidateRegistration() {
                       type="text"
                       value={form.constituency}
                       onChange={(e) => update('constituency', e.target.value)}
-                      required
                       className={inputClasses}
                       placeholder="e.g. Central District"
                     />
@@ -273,7 +264,6 @@ export default function CandidateRegistration() {
                     type="text"
                     value={form.position}
                     onChange={(e) => update('position', e.target.value)}
-                    required
                     placeholder="e.g. Member of Parliament"
                     className={inputClasses}
                   />
@@ -346,35 +336,6 @@ export default function CandidateRegistration() {
                   placeholder="e.g. ₹75,00,000 Total Assets"
                   className={inputClasses}
                 />
-              </div>
-            </div>
-          </div>
-
-          {/* Contact Methods */}
-          <div className="bg-slate-900/60 border border-slate-800/80 rounded-[40px] p-8 backdrop-blur-xl shadow-2xl">
-            <div className="flex items-center gap-4 mb-8">
-              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
-                <Phone className="w-6 h-6 text-blue-400" />
-              </div>
-              <h2 className="text-xl font-bold text-white tracking-tight">Public Contact Channels</h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="relative group">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 transition-colors group-focus-within:text-blue-400" />
-                <input type="email" placeholder="Official Email" value={form.contact.email} onChange={(e) => update('contact.email', e.target.value)} className={`${inputClasses} pl-12`} />
-              </div>
-              <div className="relative group">
-                <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 transition-colors group-focus-within:text-blue-400" />
-                <input type="tel" placeholder="Public Phone" value={form.contact.phone} onChange={(e) => update('contact.phone', e.target.value)} className={`${inputClasses} pl-12`} />
-              </div>
-              <div className="relative group col-span-full">
-                <Facebook className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 transition-colors group-focus-within:text-blue-400" />
-                <input type="text" placeholder="Facebook Profile URL" value={form.contact.facebook} onChange={(e) => update('contact.facebook', e.target.value)} className={`${inputClasses} pl-12`} />
-              </div>
-              <div className="relative group col-span-full">
-                <Twitter className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 transition-colors group-focus-within:text-blue-400" />
-                <input type="text" placeholder="Twitter Handle" value={form.contact.twitter} onChange={(e) => update('contact.twitter', e.target.value)} className={`${inputClasses} pl-12`} />
               </div>
             </div>
           </div>

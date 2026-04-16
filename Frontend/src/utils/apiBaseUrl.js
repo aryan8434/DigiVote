@@ -7,9 +7,25 @@ const hasHttpProtocol = (value) => /^https?:\/\//i.test(value);
 
 export const getApiBaseUrl = () => {
   const isNative = Capacitor.isNativePlatform();
+  const currentOrigin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : "";
 
-  // For web (including backend-served build), always use same origin.
+  // Web builds served by backend should use same-origin requests.
   if (!isNative) {
+    if (import.meta.env.DEV) {
+      return "http://localhost:3000";
+    }
+
+    if (
+      currentOrigin &&
+      /localhost|127\.0\.0\.1/i.test(currentOrigin) &&
+      !currentOrigin.endsWith(":3000")
+    ) {
+      return "http://localhost:3000";
+    }
+
     return "";
   }
 

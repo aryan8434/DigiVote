@@ -11,8 +11,6 @@ import {
   Shield,
   Users,
   Send,
-  MapPin,
-  Hash,
   Sparkles,
 } from "lucide-react";
 import { Capacitor, CapacitorHttp } from "@capacitor/core";
@@ -60,12 +58,8 @@ export default function VoteFlow() {
   const [mobileVoter, setMobileVoter] = useState(null);
 
   const [form, setForm] = useState({
-    constituency: "",
-    ward: "",
     aadhar: "",
   });
-  const [constituencies, setConstituencies] = useState([]);
-  const [wards, setWards] = useState([]);
   const [fingerprintHash, setFingerprintHash] = useState("");
   const [candidates, setCandidates] = useState([]);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
@@ -110,13 +104,7 @@ export default function VoteFlow() {
         return;
       }
 
-      const voter = verifyData?.voterDetails;
-      if (!voter?.constituency) {
-        setError("Voter constituency not found.");
-        return;
-      }
-
-      setMobileVoter(voter);
+      setMobileVoter(verifyData?.voterDetails || null);
       localStorage.setItem("voterId", normalizedVoterId);
 
       const candidateResponse = await getNativeJson(
@@ -205,29 +193,13 @@ export default function VoteFlow() {
     }
   };
 
-  useEffect(() => {
-    axiosClient.get("/api/voter/constituencies").then((r) => {
-      if (r.data?.constituencies) setConstituencies(r.data.constituencies);
-    });
-  }, []);
-
-  useEffect(() => {
-    if (!form.constituency) {
-      setWards([]);
-      return;
-    }
-    axiosClient
-      .get(`/api/voter/wards/${encodeURIComponent(form.constituency)}`)
-      .then((r) => {
-        if (r.data?.wards) setWards(r.data.wards);
-      });
-  }, [form.constituency]);
-
   const handleVerify = async () => {
     setError("");
     setLoading(true);
     try {
-      const res = await axiosClient.post("/api/vote/verify", form);
+      const res = await axiosClient.post("/api/vote/verify", {
+        aadhar: form.aadhar,
+      });
       if (res.data?.success && res.data?.canVote) {
         setStep(1);
       } else {
@@ -247,16 +219,12 @@ export default function VoteFlow() {
   };
 
   useEffect(() => {
-    if (step === 2 && form.constituency) {
-      axiosClient
-        .get(
-          `/api/candidate/list?constituency=${encodeURIComponent(form.constituency)}`,
-        )
-        .then((r) => {
-          if (r.data?.candidates) setCandidates(r.data.candidates);
-        });
+    if (step === 2) {
+      axiosClient.get(`/api/candidate/list`).then((r) => {
+        if (r.data?.candidates) setCandidates(r.data.candidates);
+      });
     }
-  }, [step, form.constituency]);
+  }, [step]);
 
   const handleCastVote = async () => {
     if (!selectedCandidate) {
@@ -269,8 +237,6 @@ export default function VoteFlow() {
       const res = await axiosClient.post("/api/vote/cast", {
         candidateId: selectedCandidate._id,
         aadhar: form.aadhar,
-        constituency: form.constituency,
-        ward: form.ward,
         fingerprintHash,
       });
       if (res.data?.success) {
@@ -294,8 +260,8 @@ export default function VoteFlow() {
   if (isNative) {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-200 py-12 px-4 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/5 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute top-0 right-0 w-150 h-150 bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-150 h-150 bg-blue-500/5 blur-[120px] rounded-full pointer-events-none" />
 
         <div className="max-w-3xl mx-auto relative z-10">
           <header className="mb-12 flex items-center justify-between">
@@ -370,7 +336,7 @@ export default function VoteFlow() {
                   <p className="text-slate-400 text-sm">
                     {mobileVoter?.fullName
                       ? `Verified voter: ${mobileVoter.fullName}`
-                      : "Select one candidate from your constituency."}
+                      : "Select one candidate from the full ballot."}
                   </p>
                 </div>
                 <div className="p-3 bg-emerald-500/10 rounded-2xl">
@@ -378,11 +344,11 @@ export default function VoteFlow() {
                 </div>
               </div>
 
-              <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-4 max-h-100 overflow-y-auto pr-2 custom-scrollbar">
                 {candidates.length === 0 && (
                   <div className="text-center py-20 border border-dashed border-slate-800 rounded-3xl">
                     <p className="text-slate-500 italic">
-                      No candidates found for your constituency.
+                      No candidates are available right now.
                     </p>
                   </div>
                 )}
@@ -506,8 +472,8 @@ export default function VoteFlow() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 py-12 px-4 relative overflow-hidden">
       {/* Background Decorative Elements */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 right-0 w-150 h-150 bg-emerald-500/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-150 h-150 bg-blue-500/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-3xl mx-auto relative z-10">
         <header className="mb-12 flex items-center justify-between">
@@ -554,86 +520,11 @@ export default function VoteFlow() {
                 Voter Authentication
               </h2>
               <p className="text-slate-400 text-sm">
-                Please verify your electoral district and identity to access
-                your ballot.
+                Enter your Aadhaar number to access your ballot.
               </p>
             </div>
 
             <div className="space-y-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label className={labelClasses}>Constituency</label>
-                  <div className="relative">
-                    <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
-                    {constituencies.length > 0 ? (
-                      <select
-                        value={form.constituency}
-                        onChange={(e) =>
-                          setForm((f) => ({
-                            ...f,
-                            constituency: e.target.value,
-                          }))
-                        }
-                        className={`${inputClasses} pl-11 appearance-none`}
-                      >
-                        <option value="">Select District</option>
-                        {constituencies.map((c) => (
-                          <option key={c} value={c}>
-                            {c}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={form.constituency}
-                        onChange={(e) =>
-                          setForm((f) => ({
-                            ...f,
-                            constituency: e.target.value,
-                          }))
-                        }
-                        placeholder="District Name"
-                        className={`${inputClasses} pl-11`}
-                      />
-                    )}
-                  </div>
-                </div>
-
-                <div>
-                  <label className={labelClasses}>Ward / Booth</label>
-                  <div className="relative">
-                    <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
-                    {wards.length > 0 ? (
-                      <select
-                        value={form.ward}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, ward: e.target.value }))
-                        }
-                        className={`${inputClasses} pl-11 appearance-none`}
-                      >
-                        <option value="">Select Ward</option>
-                        {wards.map((w) => (
-                          <option key={w} value={w}>
-                            {w}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={form.ward}
-                        onChange={(e) =>
-                          setForm((f) => ({ ...f, ward: e.target.value }))
-                        }
-                        placeholder="Ward Number"
-                        className={`${inputClasses} pl-11`}
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
-
               <div>
                 <label className={labelClasses}>Aadhaar Identity</label>
                 <div className="relative">
@@ -656,12 +547,7 @@ export default function VoteFlow() {
 
               <button
                 onClick={handleVerify}
-                disabled={
-                  loading ||
-                  !form.constituency ||
-                  !form.ward ||
-                  form.aadhar.length !== 12
-                }
+                disabled={loading || form.aadhar.length !== 12}
                 className="w-full py-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg transition-all shadow-xl shadow-emerald-950/20 active:scale-95 disabled:opacity-30 disabled:grayscale"
               >
                 {loading
@@ -723,7 +609,7 @@ export default function VoteFlow() {
                   Cast Your Vote
                 </h2>
                 <p className="text-slate-400 text-sm">
-                  Select one candidate from your registered constituency.
+                  Select one candidate from the full ballot.
                 </p>
               </div>
               <div className="p-3 bg-emerald-500/10 rounded-2xl">
@@ -731,11 +617,11 @@ export default function VoteFlow() {
               </div>
             </div>
 
-            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-4 max-h-100 overflow-y-auto pr-2 custom-scrollbar">
               {candidates.length === 0 && (
                 <div className="text-center py-20 border border-dashed border-slate-800 rounded-3xl">
                   <p className="text-slate-500 italic">
-                    No candidates found for {form.constituency}.
+                    No candidates are available right now.
                   </p>
                 </div>
               )}

@@ -1,4 +1,33 @@
 const Config = require("../model/config");
+const mongoose = require("mongoose");
+const fs = require("fs");
+const path = require("path");
+
+const FALLBACK_CONFIG_PATH = path.join(
+  __dirname,
+  "../config/localElectionConfig.json",
+);
+
+function isDbConnected() {
+  return mongoose.connection.readyState === 1;
+}
+
+function readFallbackConfig() {
+  try {
+    if (!fs.existsSync(FALLBACK_CONFIG_PATH)) return null;
+    const raw = fs.readFileSync(FALLBACK_CONFIG_PATH, "utf8").trim();
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function getEffectiveConfig() {
+  if (isDbConnected()) {
+    return await Config.findOne().sort({ createdAt: -1 }).lean();
+  }
+  return readFallbackConfig();
+}
 
 // Voter registration is always open — no time check needed
 async function checkRegistrationOpen(req, res, next) {
@@ -8,7 +37,7 @@ async function checkRegistrationOpen(req, res, next) {
 // Candidate registration window is controlled by admin via candidateRegStart and candidateRegEnd
 async function checkCandidateRegistrationOpen(req, res, next) {
   try {
-    const config = await Config.findOne().sort({ createdAt: -1 }).lean();
+    const config = await getEffectiveConfig();
     if (!config || !config.candidateRegStart || !config.candidateRegEnd) {
       return res.status(503).json({
         success: false,
@@ -34,13 +63,18 @@ async function checkCandidateRegistrationOpen(req, res, next) {
     req.electionConfig = config;
     next();
   } catch (err) {
-    res.status(500).json({ success: false, message: "Server error" });
+    res
+      .status(503)
+      .json({
+        success: false,
+        message: "Database unavailable. Please try again shortly.",
+      });
   }
 }
 
 async function checkVotingOpen(req, res, next) {
   try {
-    const config = await Config.findOne().sort({ createdAt: -1 }).lean();
+    const config = await getEffectiveConfig();
     if (!config) {
       return res.status(503).json({
         success: false,
@@ -68,13 +102,18 @@ async function checkVotingOpen(req, res, next) {
     req.electionConfig = config;
     next();
   } catch (err) {
-    res.status(500).json({ success: false, message: "Server error" });
+    res
+      .status(503)
+      .json({
+        success: false,
+        message: "Database unavailable. Please try again shortly.",
+      });
   }
 }
 
 async function getServerTime(req, res) {
   try {
-    const config = await Config.findOne().sort({ createdAt: -1 }).lean();
+    const config = await getEffectiveConfig();
     res.json({
       serverTime: new Date().toISOString(),
       config: config
@@ -87,7 +126,12 @@ async function getServerTime(req, res) {
         : null,
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: "Server error" });
+    res
+      .status(503)
+      .json({
+        success: false,
+        message: "Database unavailable. Please try again shortly.",
+      });
   }
 }
 

@@ -1,0 +1,62 @@
+[
+  {
+    "name": "Test Candidate",
+    "partyName": "Demo Party",
+    "symbolURL": "",
+    "photoURL": "",
+    "position": "MLA",
+    "constituency": "Ward-1",
+    "education": [
+      "BA"
+    ],
+    "experience": [
+      "5 years public service"
+    ],
+    "achievements": [
+      "Local development"
+    ],
+    "promises": [
+      "Transparent governance"
+    ],
+    "criminalRecord": "NONE",
+    "assetsDeclared": "100000",
+    "contact": {
+      "email": "test@example.com",
+      "phone": "9999999999",
+      "facebook": "",
+      "twitter": ""
+    },
+    "_id": "local-1776352645425",
+    "createdAt": "2026-04-16T15:17:25.425Z"
+  },
+  {
+    "name": "UDTA PUNJAB",
+    "partyName": "HFBGH",
+    "symbolURL": "",
+    "photoURL": "",
+    "position": "HFGNBHG",
+    "constituency": "FHNGH",
+    "education": [
+      "FGHBFGY"
+    ],
+    "experience": [
+      "RGFYFH"
+    ],
+    "achievements": [
+      "FGHBF"
+    ],
+    "promises": [
+      "FGHBF"
+    ],
+    "criminalRecord": "NONE",
+    "assetsDeclared": "FHB",
+    "contact": {
+      "email": "RYTGYRT@hdfhf.cic",
+      "phone": "RTYFGRYRY",
+      "facebook": "YRGH",
+      "twitter": "YRTHYRTGH"
+    },
+    "_id": "local-1776353227875",
+    "createdAt": "2026-04-16T15:27:07.875Z"
+  }
+]

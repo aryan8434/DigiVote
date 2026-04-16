@@ -5,66 +5,63 @@ const voterSchema = new Schema(
   {
     fullName: {
       type: String,
-      required: true,
+      default: '',
       trim: true,
     },
     fatherOrHusbandName: {
       type: String,
-      required: true,
+      default: '',
       trim: true,
     },
     dateOfBirth: {
-      type: Date,
-      required: true,
+      type: String,
+      default: '',
+      trim: true,
     },
     gender: {
       type: String,
       enum: ['male', 'female', 'other'],
-      required: true,
+      default: 'other',
     },
     aadhar: {
       type: String,
-      required: true,
-      unique: true,
+      default: '',
       trim: true,
-      minLength: 12,
-      maxLength: 12,
     },
     voterId: {
       type: String,
-      required: true,
+      default: '',
       trim: true,
-      unique: true,
     },
     address: {
-      permanent: { type: String, required: true },
+      permanent: { type: String, default: '' },
       current: { type: String, default: '' },
     },
     constituency: {
       type: String,
-      required: true,
+      default: '',
       trim: true,
     },
     ward: {
       type: String,
-      required: true,
+      default: '',
       trim: true,
     },
     booth: {
       type: String,
-      required: true,
+      default: '',
       trim: true,
     },
     contact: {
       type: String,
-      required: true,
+      default: '',
       trim: true,
     },
     // Biometrics - SHA-256 hashed only
     fingerprintHash: {
       type: String,
       trim: true,
-      default: null,
+      default: '',
     },
     isVerified: {
       type: Boolean,

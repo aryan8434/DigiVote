@@ -10,12 +10,12 @@ const candidateSchema = new Schema(
     },
     name: {
       type: String,
-      required: true,
+      default: '',
       trim: true,
     },
     partyName: {
       type: String,
-      required: true,
+      default: '',
       trim: true,
     },
     symbolURL: {
@@ -25,12 +25,12 @@ const candidateSchema = new Schema(
     },
     position: {
       type: String,
-      required: true,
+      default: '',
       trim: true,
     }, // e.g. "Member of Parliament - Central District"
     constituency: {
       type: String,
-      required: true,
+      default: '',
       trim: true,
     },
     education: [
@@ -66,12 +66,6 @@ const candidateSchema = new Schema(
       type: String,
       trim: true,
       default: '',
-    },
-    contact: {
-      email: { type: String, trim: true, default: '' },
-      phone: { type: String, trim: true, default: '' },
-      facebook: { type: String, trim: true, default: '' },
-      twitter: { type: String, trim: true, default: '' },
     },
   },
   { timestamps: true }

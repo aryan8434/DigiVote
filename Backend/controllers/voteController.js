@@ -34,8 +34,6 @@ async function castVote(req, res) {
     if (
       !normalized.candidateId ||
       !normalized.aadhar ||
-      !normalized.constituency ||
-      !normalized.ward ||
       !normalized.fingerprintHash
     ) {
       console.warn("[castVote] Missing required fields", {
@@ -49,14 +47,12 @@ async function castVote(req, res) {
       return res.status(400).json({
         success: false,
         message:
-          "Missing required fields: candidateId, aadhar, constituency, ward, fingerprintHash",
+          "Missing required fields: candidateId, aadhar, fingerprintHash",
       });
     }
 
     const voter = await Voter.findOne({
       aadhar: normalized.aadhar,
-      constituency: normalized.constituency,
-      ward: normalized.ward,
       isVerified: true,
     })
       .session(session)
@@ -71,7 +67,7 @@ async function castVote(req, res) {
       await session.abortTransaction();
       return res.status(404).json({
         success: false,
-        message: "Voter not found or not verified for this constituency/ward.",
+        message: "Voter not found or not verified.",
       });
     }
 
@@ -106,24 +102,20 @@ async function castVote(req, res) {
     const candidate = await Candidate.findById(normalized.candidateId)
       .session(session)
       .lean();
-    if (!candidate || candidate.constituency !== normalized.constituency) {
-      console.warn("[castVote] Candidate constituency mismatch", {
+    if (!candidate) {
+      console.warn("[castVote] Candidate not found", {
         candidateId: normalized.candidateId,
-        payloadConstituency: normalized.constituency,
-        candidateConstituency: candidate?.constituency || null,
       });
       await session.abortTransaction();
       return res.status(400).json({
         success: false,
-        message: "Invalid candidate for this constituency.",
+        message: "Invalid candidate selected.",
       });
     }
 
     const voterIdHash = hashVoterId(voter._id.toString());
     const existingVote = await Vote.findOne({
       voterIdHash,
-      constituency: normalized.constituency,
-      ward: normalized.ward,
     })
       .session(session)
       .lean();
@@ -143,8 +135,8 @@ async function castVote(req, res) {
     const voteDoc = new Vote({
       candidateId: new mongoose.Types.ObjectId(normalized.candidateId),
       voterIdHash,
-      constituency: normalized.constituency,
-      ward: normalized.ward,
+      constituency: String(voter.constituency || normalized.constituency || "").trim(),
+      ward: String(voter.ward || normalized.ward || "").trim(),
       previousBlockHash,
     });
     await voteDoc.save({ session });
@@ -185,7 +177,7 @@ async function verifyVoterForAuth(req, res) {
       ward: String(ward || "").trim(),
     };
 
-    if (!normalized.aadhar || !normalized.constituency || !normalized.ward) {
+    if (!normalized.aadhar) {
       console.warn("[verifyVoterForAuth] Missing fields", {
         aadhar: maskAadhar(normalized.aadhar),
         constituency: normalized.constituency,
@@ -193,14 +185,12 @@ async function verifyVoterForAuth(req, res) {
       });
       return res.status(400).json({
         success: false,
-        message: "Missing aadhar, constituency, or ward.",
+        message: "Missing aadhar.",
       });
     }
 
     const voter = await Voter.findOne({
       aadhar: normalized.aadhar,
-      constituency: normalized.constituency,
-      ward: normalized.ward,
       isVerified: true,
     })
       .select("fullName isVerified lastVotedAt")
@@ -338,8 +328,6 @@ async function castVoteByVoterId(req, res) {
     const voterIdHash = hashVoterId(voter._id.toString());
     const existingVote = await Vote.findOne({
       voterIdHash,
-      constituency: voter.constituency,
-      ward: voter.ward,
     })
       .session(session)
       .lean();
@@ -391,60 +379,22 @@ async function castVoteByVoterId(req, res) {
 }
 
 /**
- * Get searchable constituency names for results page
- */
-async function getResultConstituencies(req, res) {
-  try {
-    const [candidateConstituencies, voteConstituencies] = await Promise.all([
-      Candidate.distinct("constituency"),
-      Vote.distinct("constituency"),
-    ]);
-
-    const list = Array.from(
-      new Set([
-        ...(candidateConstituencies || []),
-        ...(voteConstituencies || []),
-      ]),
-    )
-      .filter(Boolean)
-      .map((item) => String(item).trim())
-      .sort((a, b) => a.localeCompare(b));
-
-    res.json({ success: true, constituencies: list });
-  } catch (err) {
-    console.error("getResultConstituencies error:", err);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to fetch constituencies." });
-  }
-}
-
-/**
- * Get constituency result with winner and all candidate vote counts
+ * Get global result with winner and all candidate vote counts
  */
 async function getConstituencyResult(req, res) {
   try {
-    const constituency = String(req.query.constituency || "").trim();
-    if (!constituency) {
-      return res.status(400).json({
-        success: false,
-        message: "constituency query parameter is required.",
-      });
-    }
-
-    const candidates = await Candidate.find({ constituency })
+    const candidates = await Candidate.find({})
       .select("name partyName photoURL symbolURL position constituency")
       .lean();
 
     if (!candidates.length) {
       return res.status(404).json({
         success: false,
-        message: "No candidates found for this constituency.",
+        message: "No candidates found.",
       });
     }
 
     const voteCounts = await Vote.aggregate([
-      { $match: { constituency } },
       { $group: { _id: "$candidateId", votes: { $sum: 1 } } },
     ]);
 
@@ -465,7 +415,6 @@ async function getConstituencyResult(req, res) {
 
     res.json({
       success: true,
-      constituency,
       totalVotesCast: candidateResults.reduce((sum, c) => sum + c.voteCount, 0),
       winner,
       candidates: candidateResults,
@@ -474,7 +423,7 @@ async function getConstituencyResult(req, res) {
     console.error("getConstituencyResult error:", err);
     res
       .status(500)
-      .json({ success: false, message: "Failed to fetch election result." });
+      .json({ success: false, message: "Failed to fetch election results." });
   }
 }
 
@@ -483,6 +432,5 @@ module.exports = {
   verifyVoterForAuth,
   verifyVoterIdForAuth,
   castVoteByVoterId,
-  getResultConstituencies,
   getConstituencyResult,
 };

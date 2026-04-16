@@ -26,23 +26,8 @@ export default function VoterRegistration() {
     contact: '',
   });
 
-  const canSubmit =
-    form.fullName &&
-    form.fatherOrHusbandName &&
-    form.dateOfBirth &&
-    form.gender &&
-    form.aadhar.length === 12 &&
-    form.voterId &&
-    form.address.permanent &&
-    form.constituency &&
-    form.ward &&
-    form.booth &&
-    form.contact &&
-    fingerprintHash;
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!canSubmit) return;
     setError('');
     setLoading(true);
     try {
@@ -121,7 +106,6 @@ export default function VoterRegistration() {
                   onChange={(e) => update('fullName', e.target.value)}
                   className={inputClasses}
                   placeholder="Full name as per government records"
-                  required
                 />
               </div>
               
@@ -133,7 +117,6 @@ export default function VoterRegistration() {
                   onChange={(e) => update('fatherOrHusbandName', e.target.value)}
                   className={inputClasses}
                   placeholder="Father/Husband Name"
-                  required
                 />
               </div>
 
@@ -146,7 +129,6 @@ export default function VoterRegistration() {
                     value={form.dateOfBirth}
                     onChange={(e) => update('dateOfBirth', e.target.value)}
                     className={`${inputClasses} pl-11`}
-                    required
                   />
                 </div>
               </div>
@@ -174,7 +156,6 @@ export default function VoterRegistration() {
                     onChange={(e) => update('contact', e.target.value)}
                     className={`${inputClasses} pl-11`}
                     placeholder="Mobile number for OTP"
-                    required
                   />
                 </div>
               </div>
@@ -202,7 +183,6 @@ export default function VoterRegistration() {
                     className={`${inputClasses} pl-11`}
                     placeholder="12-digit Aadhaar Number"
                     maxLength={12}
-                    required
                   />
                 </div>
               </div>
@@ -217,7 +197,6 @@ export default function VoterRegistration() {
                     onChange={(e) => update('voterId', e.target.value)}
                     className={`${inputClasses} pl-11`}
                     placeholder="EPIC / Voter ID Number"
-                    required
                   />
                 </div>
               </div>
@@ -232,7 +211,6 @@ export default function VoterRegistration() {
                     className={`${inputClasses} pl-11 min-h-[80px]`}
                     placeholder="Enter full permanent residential address"
                     rows={2}
-                    required
                   />
                 </div>
               </div>
@@ -245,7 +223,6 @@ export default function VoterRegistration() {
                   onChange={(e) => update('constituency', e.target.value)}
                   className={inputClasses}
                   placeholder="Region/District"
-                  required
                 />
               </div>
 
@@ -258,7 +235,6 @@ export default function VoterRegistration() {
                     value={form.ward}
                     onChange={(e) => update('ward', e.target.value)}
                     className={inputClasses}
-                    required
                   />
                   <input
                     type="text"
@@ -266,7 +242,6 @@ export default function VoterRegistration() {
                     value={form.booth}
                     onChange={(e) => update('booth', e.target.value)}
                     className={inputClasses}
-                    required
                   />
                 </div>
               </div>
@@ -319,7 +294,7 @@ export default function VoterRegistration() {
 
           <button
             type="submit"
-            disabled={!canSubmit || loading}
+            disabled={loading}
             className="w-full py-5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xl transition-all shadow-xl shadow-emerald-950/20 active:scale-[0.98] disabled:opacity-30 disabled:grayscale disabled:cursor-not-allowed group"
           >
             {loading ? (
