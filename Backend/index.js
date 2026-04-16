@@ -57,6 +57,11 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 
+// Avoid noisy 404s in browsers when no favicon file is bundled.
+app.get("/favicon.ico", (req, res) => {
+  res.status(204).end();
+});
+
 // NoSQL injection sanitization (Express 5 compatible: no reassignment of req.query)
 app.use((req, res, next) => {
   if (req.body && typeof req.body === "object") sanitize(req.body);
@@ -76,16 +81,11 @@ app.use("/api/config", configRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/admin", adminRouter);
 
-// Serve frontend from the same backend origin for simple single-link deployment.
-const staticCandidates = [
-  path.join(__dirname, "public"),
-  path.join(__dirname, "../Frontend/dist"),
-];
-const staticDir = staticCandidates.find((dir) =>
-  fs.existsSync(path.join(dir, "index.html")),
-);
+// Serve frontend strictly from Backend/build.
+const staticDir = path.join(__dirname, "build");
 
-if (staticDir) {
+if (fs.existsSync(path.join(staticDir, "index.html"))) {
+  console.log("Serving frontend from:", staticDir);
   app.use(express.static(staticDir));
   app.get(/^(?!\/api|\/socket\.io).*/, (req, res) => {
     res.sendFile(path.join(staticDir, "index.html"));
@@ -124,26 +124,28 @@ function broadcastElectionUpdate() {
 }
 
 const InitializeConnection = async () => {
+  const port = process.env.PORT || 3000;
+  server.listen(port, () => {
+    console.log("Server is running at Port:", port);
+  });
+
   try {
     await main();
-
-    // Attempt Redis connection, but don't block server startup if it fails
-    if (redisClient && typeof redisClient.connect === "function") {
-      try {
-        await redisClient.connect();
-      } catch (redisError) {
-        console.error("Redis connection failed:", redisError.message);
-      }
-    }
-
     console.log("DB Connected");
-
-    const port = process.env.PORT || 3000;
-    server.listen(port, () => {
-      console.log("Server is running at Port:", port);
-    });
   } catch (error) {
-    console.error("Error:", error.message);
+    console.error("MongoDB connection failed:", error.message);
+    console.warn(
+      "Running in degraded mode: frontend/static routes are available, DB-backed APIs may fail until MongoDB is reachable.",
+    );
+  }
+
+  // Attempt Redis connection, but don't block server startup if it fails
+  if (redisClient && typeof redisClient.connect === "function") {
+    try {
+      await redisClient.connect();
+    } catch (redisError) {
+      console.error("Redis connection failed:", redisError.message);
+    }
   }
 };
 

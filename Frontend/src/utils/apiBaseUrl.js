@@ -6,10 +6,17 @@ const trimTrailingSlash = (value) => value.replace(/\/+$/, "");
 const hasHttpProtocol = (value) => /^https?:\/\//i.test(value);
 
 export const getApiBaseUrl = () => {
+  const isNative = Capacitor.isNativePlatform();
+
+  // For web (including backend-served build), always use same origin.
+  if (!isNative) {
+    return "";
+  }
+
   const envUrl = import.meta.env.VITE_API_URL?.trim();
   if (envUrl) {
     const normalized = trimTrailingSlash(envUrl);
-    if (Capacitor.isNativePlatform() && !hasHttpProtocol(normalized)) {
+    if (!hasHttpProtocol(normalized) || normalized === "/api") {
       return DEFAULT_PRODUCTION_API_URL;
     }
     return normalized;
@@ -20,7 +27,7 @@ export const getApiBaseUrl = () => {
     return DEFAULT_PRODUCTION_API_URL;
   }
 
-  if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android") {
+  if (Capacitor.getPlatform() === "android") {
     return "http://10.0.2.2:3000";
   }
 
