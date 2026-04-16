@@ -45,7 +45,8 @@ async function registerVoter(req, res) {
     const normalizedVoterId = String(voterId || "").trim();
     const duplicateFilters = [];
     if (normalizedAadhar) duplicateFilters.push({ aadhar: normalizedAadhar });
-    if (normalizedVoterId) duplicateFilters.push({ voterId: normalizedVoterId });
+    if (normalizedVoterId)
+      duplicateFilters.push({ voterId: normalizedVoterId });
 
     const existing = duplicateFilters.length
       ? await Voter.findOne({ $or: duplicateFilters })
@@ -191,12 +192,10 @@ async function verifyVoter(req, res) {
     const voter = await Voter.findOne({ voterId: String(voterId).trim() });
 
     if (!voter) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "Voter ID not found. Please register first.",
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Voter ID not found. Please register first.",
+      });
     }
 
     res.json({

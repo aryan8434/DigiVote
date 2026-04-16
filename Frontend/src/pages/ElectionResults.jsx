@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trophy, Users } from 'lucide-react';
-import axiosClient from '../utils/axiosClient';
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, Trophy, Users } from "lucide-react";
+import axiosClient from "../utils/axiosClient";
 
 export default function ElectionResults() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [result, setResult] = useState(null);
 
   useEffect(() => {
@@ -15,18 +15,20 @@ export default function ElectionResults() {
 
     setLoading(true);
     axiosClient
-      .get('/api/vote/result')
+      .get("/api/vote/result")
       .then((res) => {
         if (!isMounted) return;
         if (res.data?.success) {
           setResult(res.data);
         } else {
-          setError(res.data?.message || 'Result not found.');
+          setError(res.data?.message || "Result not found.");
         }
       })
       .catch((err) => {
         if (!isMounted) return;
-        setError(err.response?.data?.message || 'Failed to fetch election result.');
+        setError(
+          err.response?.data?.message || "Failed to fetch election result.",
+        );
       })
       .finally(() => {
         if (!isMounted) return;
@@ -42,7 +44,7 @@ export default function ElectionResults() {
     <div className="min-h-screen bg-slate-950 text-slate-100 px-4 py-10">
       <div className="max-w-6xl mx-auto">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
           className="mb-6 inline-flex items-center gap-2 text-slate-400 hover:text-emerald-400 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -75,21 +77,29 @@ export default function ElectionResults() {
             <div className="rounded-3xl border border-emerald-500/40 bg-emerald-500/10 p-6 sm:p-8">
               <div className="flex items-center gap-3 mb-4">
                 <Trophy className="w-6 h-6 text-emerald-300" />
-                <h2 className="text-2xl font-black text-emerald-200">Top Candidate</h2>
+                <h2 className="text-2xl font-black text-emerald-200">
+                  Top Candidate
+                </h2>
               </div>
               <div className="grid gap-5 sm:grid-cols-[auto_1fr_auto] items-center">
                 <img
-                  src={result.winner?.photoURL || '/placeholder-avatar.png'}
-                  alt={result.winner?.name || 'Winner'}
+                  src={result.winner?.photoURL || "/placeholder-avatar.png"}
+                  alt={result.winner?.name || "Winner"}
                   className="w-24 h-24 rounded-2xl object-cover border border-emerald-400/30"
                 />
                 <div>
-                  <p className="text-2xl font-extrabold text-white">{result.winner?.name}</p>
+                  <p className="text-2xl font-extrabold text-white">
+                    {result.winner?.name}
+                  </p>
                   <p className="text-emerald-200">{result.winner?.partyName}</p>
                 </div>
                 <div className="text-left sm:text-right">
-                  <p className="text-xs uppercase tracking-wider text-emerald-300/80">Vote Count</p>
-                  <p className="text-3xl font-black text-emerald-100">{result.winner?.voteCount ?? 0}</p>
+                  <p className="text-xs uppercase tracking-wider text-emerald-300/80">
+                    Vote Count
+                  </p>
+                  <p className="text-3xl font-black text-emerald-100">
+                    {result.winner?.voteCount ?? 0}
+                  </p>
                 </div>
               </div>
             </div>
@@ -100,7 +110,9 @@ export default function ElectionResults() {
                   <Users className="w-5 h-5 text-slate-300" />
                   Candidate Rankings
                 </h3>
-                <p className="text-sm text-slate-400">Total Votes: {result.totalVotesCast}</p>
+                <p className="text-sm text-slate-400">
+                  Total Votes: {result.totalVotesCast}
+                </p>
               </div>
 
               <div className="space-y-3">
@@ -109,19 +121,29 @@ export default function ElectionResults() {
                     key={candidate._id}
                     className="rounded-2xl border border-slate-800 bg-slate-950/60 px-4 py-4 flex items-center gap-4"
                   >
-                    <span className="w-8 text-center text-slate-500 font-bold">#{idx + 1}</span>
+                    <span className="w-8 text-center text-slate-500 font-bold">
+                      #{idx + 1}
+                    </span>
                     <img
-                      src={candidate.photoURL || '/placeholder-avatar.png'}
+                      src={candidate.photoURL || "/placeholder-avatar.png"}
                       alt={candidate.name}
                       className="w-14 h-14 rounded-xl object-cover"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-white truncate">{candidate.name}</p>
-                      <p className="text-sm text-slate-400 truncate">{candidate.partyName}</p>
+                      <p className="font-bold text-white truncate">
+                        {candidate.name}
+                      </p>
+                      <p className="text-sm text-slate-400 truncate">
+                        {candidate.partyName}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-xs uppercase tracking-widest text-slate-500">Votes</p>
-                      <p className="text-lg font-black text-emerald-300">{candidate.voteCount}</p>
+                      <p className="text-xs uppercase tracking-widest text-slate-500">
+                        Votes
+                      </p>
+                      <p className="text-lg font-black text-emerald-300">
+                        {candidate.voteCount}
+                      </p>
                     </div>
                   </div>
                 ))}

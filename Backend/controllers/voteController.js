@@ -135,7 +135,9 @@ async function castVote(req, res) {
     const voteDoc = new Vote({
       candidateId: new mongoose.Types.ObjectId(normalized.candidateId),
       voterIdHash,
-      constituency: String(voter.constituency || normalized.constituency || "").trim(),
+      constituency: String(
+        voter.constituency || normalized.constituency || "",
+      ).trim(),
       ward: String(voter.ward || normalized.ward || "").trim(),
       previousBlockHash,
     });

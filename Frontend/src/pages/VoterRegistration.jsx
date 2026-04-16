@@ -1,63 +1,73 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axiosClient from '../utils/axiosClient';
-import { useLanguage } from '../contexts/LanguageContext';
-import FingerprintSimulator from '../components/FingerprintSimulator';
-import HardwareFingerprintCapture from '../components/HardwareFingerprintCapture';
-import { ArrowLeft, Check, User, Calendar, MapPin, Hash, Phone, ShieldCheck } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axiosClient from "../utils/axiosClient";
+import { useLanguage } from "../contexts/LanguageContext";
+import FingerprintSimulator from "../components/FingerprintSimulator";
+import HardwareFingerprintCapture from "../components/HardwareFingerprintCapture";
+import {
+  ArrowLeft,
+  Check,
+  User,
+  Calendar,
+  MapPin,
+  Hash,
+  Phone,
+  ShieldCheck,
+} from "lucide-react";
 
 export default function VoterRegistration() {
   const navigate = useNavigate();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [fingerprintHash, setFingerprintHash] = useState('');
+  const [error, setError] = useState("");
+  const [fingerprintHash, setFingerprintHash] = useState("");
   const [form, setForm] = useState({
-    fullName: '',
-    fatherOrHusbandName: '',
-    dateOfBirth: '',
-    gender: 'male',
-    aadhar: '',
-    voterId: '',
-    address: { permanent: '', current: '' },
-    constituency: '',
-    ward: '',
-    booth: '',
-    contact: '',
+    fullName: "",
+    fatherOrHusbandName: "",
+    dateOfBirth: "",
+    gender: "male",
+    aadhar: "",
+    voterId: "",
+    address: { permanent: "", current: "" },
+    constituency: "",
+    ward: "",
+    booth: "",
+    contact: "",
   });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
     try {
-      const res = await axiosClient.post('/api/voter/register', {
+      const res = await axiosClient.post("/api/voter/register", {
         ...form,
         fingerprintHash,
       });
       if (res.data?.success) {
-        alert('Registration successful! Document and biometric verified.');
-        navigate('/');
+        alert("Registration successful! Document and biometric verified.");
+        navigate("/");
       } else {
-        setError(res.data?.message || 'Registration failed.');
+        setError(res.data?.message || "Registration failed.");
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed.');
+      setError(err.response?.data?.message || "Registration failed.");
     } finally {
       setLoading(false);
     }
   };
 
   const update = (key, value) => {
-    if (key.startsWith('address.')) {
-      const sub = key.split('.')[1];
+    if (key.startsWith("address.")) {
+      const sub = key.split(".")[1];
       setForm((f) => ({ ...f, address: { ...f.address, [sub]: value } }));
     } else {
       setForm((f) => ({ ...f, [key]: value }));
     }
   };
 
-  const inputClasses = "w-full px-4 py-3 bg-slate-950/50 border border-slate-800 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600 text-slate-100 shadow-inner";
+  const inputClasses =
+    "w-full px-4 py-3 bg-slate-950/50 border border-slate-800 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-slate-600 text-slate-100 shadow-inner";
   const labelClasses = "block text-sm font-medium text-slate-400 mb-2 mt-1";
 
   return (
@@ -68,17 +78,26 @@ export default function VoterRegistration() {
 
       <div className="max-w-3xl mx-auto relative z-10">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
           className="flex items-center gap-2 text-slate-400 hover:text-emerald-400 mb-8 transition-colors group"
         >
           <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-          <span className="font-medium uppercase tracking-widest text-xs">Back to Home</span>
+          <span className="font-medium uppercase tracking-widest text-xs">
+            Back to Home
+          </span>
         </button>
 
         <div className="mb-10">
-          <p className="text-[10px] uppercase tracking-[0.35em] text-emerald-400 font-bold mb-2">Voter Enrollment</p>
-          <h1 className="text-4xl font-semibold tracking-tight text-white mb-2">Registration Portal</h1>
-          <p className="text-slate-400 text-sm max-w-lg">Complete your digital profile to participate in upcoming elections securely.</p>
+          <p className="text-[10px] uppercase tracking-[0.35em] text-emerald-400 font-bold mb-2">
+            Voter Enrollment
+          </p>
+          <h1 className="text-4xl font-semibold tracking-tight text-white mb-2">
+            Registration Portal
+          </h1>
+          <p className="text-slate-400 text-sm max-w-lg">
+            Complete your digital profile to participate in upcoming elections
+            securely.
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8 pb-20">
@@ -94,27 +113,31 @@ export default function VoterRegistration() {
               <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
                 <User className="w-6 h-6 text-emerald-400" strokeWidth={1.5} />
               </div>
-              <h2 className="text-xl font-semibold text-white tracking-tight">Personal Information</h2>
+              <h2 className="text-xl font-semibold text-white tracking-tight">
+                Personal Information
+              </h2>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <label className={labelClasses}>1. {t.fullName}</label>
                 <input
                   type="text"
                   value={form.fullName}
-                  onChange={(e) => update('fullName', e.target.value)}
+                  onChange={(e) => update("fullName", e.target.value)}
                   className={inputClasses}
                   placeholder="Full name as per government records"
                 />
               </div>
-              
+
               <div>
                 <label className={labelClasses}>2. {t.fatherHusbandName}</label>
                 <input
                   type="text"
                   value={form.fatherOrHusbandName}
-                  onChange={(e) => update('fatherOrHusbandName', e.target.value)}
+                  onChange={(e) =>
+                    update("fatherOrHusbandName", e.target.value)
+                  }
                   className={inputClasses}
                   placeholder="Father/Husband Name"
                 />
@@ -127,7 +150,7 @@ export default function VoterRegistration() {
                   <input
                     type="date"
                     value={form.dateOfBirth}
-                    onChange={(e) => update('dateOfBirth', e.target.value)}
+                    onChange={(e) => update("dateOfBirth", e.target.value)}
                     className={`${inputClasses} pl-11`}
                   />
                 </div>
@@ -137,7 +160,7 @@ export default function VoterRegistration() {
                 <label className={labelClasses}>4. {t.gender}</label>
                 <select
                   value={form.gender}
-                  onChange={(e) => update('gender', e.target.value)}
+                  onChange={(e) => update("gender", e.target.value)}
                   className={inputClasses}
                 >
                   <option value="male">{t.male}</option>
@@ -153,7 +176,7 @@ export default function VoterRegistration() {
                   <input
                     type="tel"
                     value={form.contact}
-                    onChange={(e) => update('contact', e.target.value)}
+                    onChange={(e) => update("contact", e.target.value)}
                     className={`${inputClasses} pl-11`}
                     placeholder="Mobile number for OTP"
                   />
@@ -166,9 +189,14 @@ export default function VoterRegistration() {
           <div className="bg-slate-900/60 border border-slate-700/50 rounded-3xl p-8 backdrop-blur-xl shadow-2xl hover:border-slate-600/50 transition-colors">
             <div className="flex items-center gap-4 mb-8">
               <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
-                <ShieldCheck className="w-6 h-6 text-blue-400" strokeWidth={1.5} />
+                <ShieldCheck
+                  className="w-6 h-6 text-blue-400"
+                  strokeWidth={1.5}
+                />
               </div>
-              <h2 className="text-xl font-semibold text-white tracking-tight">Identity & Region</h2>
+              <h2 className="text-xl font-semibold text-white tracking-tight">
+                Identity & Region
+              </h2>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -179,7 +207,12 @@ export default function VoterRegistration() {
                   <input
                     type="text"
                     value={form.aadhar}
-                    onChange={(e) => update('aadhar', e.target.value.replace(/\D/g, '').slice(0, 12))}
+                    onChange={(e) =>
+                      update(
+                        "aadhar",
+                        e.target.value.replace(/\D/g, "").slice(0, 12),
+                      )
+                    }
                     className={`${inputClasses} pl-11`}
                     placeholder="12-digit Aadhaar Number"
                     maxLength={12}
@@ -194,7 +227,7 @@ export default function VoterRegistration() {
                   <input
                     type="text"
                     value={form.voterId}
-                    onChange={(e) => update('voterId', e.target.value)}
+                    onChange={(e) => update("voterId", e.target.value)}
                     className={`${inputClasses} pl-11`}
                     placeholder="EPIC / Voter ID Number"
                   />
@@ -202,12 +235,16 @@ export default function VoterRegistration() {
               </div>
 
               <div className="md:col-span-2">
-                <label className={labelClasses}>8. {t.address} - {t.permanent}</label>
+                <label className={labelClasses}>
+                  8. {t.address} - {t.permanent}
+                </label>
                 <div className="relative">
                   <MapPin className="absolute left-4 top-4 w-4 h-4 text-slate-500" />
                   <textarea
                     value={form.address.permanent}
-                    onChange={(e) => update('address.permanent', e.target.value)}
+                    onChange={(e) =>
+                      update("address.permanent", e.target.value)
+                    }
                     className={`${inputClasses} pl-11 min-h-[80px]`}
                     placeholder="Enter full permanent residential address"
                     rows={2}
@@ -220,7 +257,7 @@ export default function VoterRegistration() {
                 <input
                   type="text"
                   value={form.constituency}
-                  onChange={(e) => update('constituency', e.target.value)}
+                  onChange={(e) => update("constituency", e.target.value)}
                   className={inputClasses}
                   placeholder="Region/District"
                 />
@@ -233,14 +270,14 @@ export default function VoterRegistration() {
                     type="text"
                     placeholder="Ward"
                     value={form.ward}
-                    onChange={(e) => update('ward', e.target.value)}
+                    onChange={(e) => update("ward", e.target.value)}
                     className={inputClasses}
                   />
                   <input
                     type="text"
                     placeholder="Booth"
                     value={form.booth}
-                    onChange={(e) => update('booth', e.target.value)}
+                    onChange={(e) => update("booth", e.target.value)}
                     className={inputClasses}
                   />
                 </div>
@@ -254,18 +291,22 @@ export default function VoterRegistration() {
               <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl">
                 <Hash className="w-6 h-6 text-indigo-400" strokeWidth={1.5} />
               </div>
-              <h2 className="text-xl font-semibold text-white tracking-tight">Biometric Data</h2>
+              <h2 className="text-xl font-semibold text-white tracking-tight">
+                Biometric Data
+              </h2>
             </div>
-            
+
             <div className="space-y-6">
               <HardwareFingerprintCapture onHash={setFingerprintHash} />
-              
+
               <div className="relative py-4">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-slate-800" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-slate-900 px-3 text-slate-500 font-bold tracking-[0.2em]">OR USE SIMULATOR</span>
+                  <span className="bg-slate-900 px-3 text-slate-500 font-bold tracking-[0.2em]">
+                    OR USE SIMULATOR
+                  </span>
                 </div>
               </div>
 
@@ -273,20 +314,30 @@ export default function VoterRegistration() {
             </div>
 
             {/* Verification Status */}
-            <div className={`mt-8 flex items-center gap-4 p-4 rounded-2xl border transition-all duration-500 ${
-              fingerprintHash 
-                ? 'bg-emerald-500/10 border-emerald-500/30 shadow-lg shadow-emerald-500/5' 
-                : 'bg-slate-800/20 border-slate-800 opacity-60 grayscale'
-            }`}>
-              <div className={`p-2 rounded-full ${fingerprintHash ? 'bg-emerald-500 text-slate-950' : 'bg-slate-700 text-slate-500'}`}>
+            <div
+              className={`mt-8 flex items-center gap-4 p-4 rounded-2xl border transition-all duration-500 ${
+                fingerprintHash
+                  ? "bg-emerald-500/10 border-emerald-500/30 shadow-lg shadow-emerald-500/5"
+                  : "bg-slate-800/20 border-slate-800 opacity-60 grayscale"
+              }`}
+            >
+              <div
+                className={`p-2 rounded-full ${fingerprintHash ? "bg-emerald-500 text-slate-950" : "bg-slate-700 text-slate-500"}`}
+              >
                 <Check className="w-5 h-5 stroke-[3px]" />
               </div>
               <div>
-                <p className={`font-bold ${fingerprintHash ? 'text-emerald-400' : 'text-slate-500'}`}>
-                  {fingerprintHash ? 'Biometric Verified' : 'Awaiting Enrollment'}
+                <p
+                  className={`font-bold ${fingerprintHash ? "text-emerald-400" : "text-slate-500"}`}
+                >
+                  {fingerprintHash
+                    ? "Biometric Verified"
+                    : "Awaiting Enrollment"}
                 </p>
                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                  {fingerprintHash ? 'Digital signature registered' : 'Scanner required'}
+                  {fingerprintHash
+                    ? "Digital signature registered"
+                    : "Scanner required"}
                 </p>
               </div>
             </div>

@@ -138,7 +138,9 @@ export default function VoteFlow() {
       }
 
       setError(
-        err.response?.data?.message || err?.message || "Unable to verify voter.",
+        err.response?.data?.message ||
+          err?.message ||
+          "Unable to verify voter.",
       );
     } finally {
       setLoading(false);

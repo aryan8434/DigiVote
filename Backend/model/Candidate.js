@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const candidateSchema = new Schema(
@@ -6,31 +6,31 @@ const candidateSchema = new Schema(
     photoURL: {
       type: String,
       trim: true,
-      default: '',
+      default: "",
     },
     name: {
       type: String,
-      default: '',
+      default: "",
       trim: true,
     },
     partyName: {
       type: String,
-      default: '',
+      default: "",
       trim: true,
     },
     symbolURL: {
       type: String,
       trim: true,
-      default: '',
+      default: "",
     },
     position: {
       type: String,
-      default: '',
+      default: "",
       trim: true,
     }, // e.g. "Member of Parliament - Central District"
     constituency: {
       type: String,
-      default: '',
+      default: "",
       trim: true,
     },
     education: [
@@ -60,18 +60,18 @@ const candidateSchema = new Schema(
     criminalRecord: {
       type: String,
       trim: true,
-      default: 'NONE',
+      default: "NONE",
     },
     assetsDeclared: {
       type: String,
       trim: true,
-      default: '',
+      default: "",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 candidateSchema.index({ constituency: 1 });
 
-const Candidate = mongoose.model('Candidate', candidateSchema);
+const Candidate = mongoose.model("Candidate", candidateSchema);
 module.exports = Candidate;

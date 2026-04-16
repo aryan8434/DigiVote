@@ -213,12 +213,10 @@ async function listCandidates(req, res) {
       .lean();
     res.json({ success: true, candidates });
   } catch (err) {
-    res
-      .status(503)
-      .json({
-        success: false,
-        message: "Candidate list temporarily unavailable.",
-      });
+    res.status(503).json({
+      success: false,
+      message: "Candidate list temporarily unavailable.",
+    });
   }
 }
 
@@ -261,12 +259,10 @@ async function searchCandidates(req, res) {
       .lean();
     res.json({ success: true, candidates });
   } catch (err) {
-    res
-      .status(503)
-      .json({
-        success: false,
-        message: "Candidate search temporarily unavailable.",
-      });
+    res.status(503).json({
+      success: false,
+      message: "Candidate search temporarily unavailable.",
+    });
   }
 }
 

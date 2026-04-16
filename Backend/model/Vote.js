@@ -1,12 +1,12 @@
-const mongoose = require('mongoose');
-const crypto = require('crypto');
+const mongoose = require("mongoose");
+const crypto = require("crypto");
 const { Schema } = mongoose;
 
 const voteSchema = new Schema(
   {
     candidateId: {
       type: Schema.Types.ObjectId,
-      ref: 'Candidate',
+      ref: "Candidate",
       required: true,
     },
     voterIdHash: {
@@ -15,12 +15,12 @@ const voteSchema = new Schema(
     }, // SHA-256 of voterId for anonymity
     constituency: {
       type: String,
-      default: '',
+      default: "",
       trim: true,
     },
     ward: {
       type: String,
-      default: '',
+      default: "",
       trim: true,
     },
     timestamp: {
@@ -29,14 +29,14 @@ const voteSchema = new Schema(
     },
     previousBlockHash: {
       type: String,
-      default: '0',
+      default: "0",
     },
     currentBlockHash: {
       type: String,
       trim: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Generate current block hash from document content
@@ -46,30 +46,32 @@ function computeBlockHash(doc) {
     voterIdHash: doc.voterIdHash,
     constituency: doc.constituency,
     ward: doc.ward,
-    timestamp: doc.timestamp ? doc.timestamp.toISOString() : new Date().toISOString(),
+    timestamp: doc.timestamp
+      ? doc.timestamp.toISOString()
+      : new Date().toISOString(),
     previousBlockHash: doc.previousBlockHash,
   });
-  return crypto.createHash('sha256').update(data).digest('hex');
+  return crypto.createHash("sha256").update(data).digest("hex");
 }
 
-voteSchema.pre('save', async function () {
+voteSchema.pre("save", async function () {
   try {
     if (!this.isNew) return;
-    
+
     // Use the document's session if it exists (for transactions)
     const session = this.$session();
-    const Vote = mongoose.model('Vote');
+    const Vote = mongoose.model("Vote");
     const lastVote = await Vote.findOne()
       .sort({ _id: -1 })
       .session(session)
       .lean();
-    
-    this.previousBlockHash = lastVote ? lastVote.currentBlockHash : '0';
+
+    this.previousBlockHash = lastVote ? lastVote.currentBlockHash : "0";
     this.currentBlockHash = computeBlockHash(this);
   } catch (err) {
     throw err;
   }
 });
 
-const Vote = mongoose.model('Vote', voteSchema);
+const Vote = mongoose.model("Vote", voteSchema);
 module.exports = { Vote, computeBlockHash };
