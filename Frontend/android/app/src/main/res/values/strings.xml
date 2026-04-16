@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">DigiVote</string>
+    <string name="title_activity_main">DigiVote</string>
+    <string name="package_name">com.digivote.app</string>
+    <string name="custom_url_scheme">com.digivote.app</string>
+</resources>

@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Fingerprint, PlugZap, CheckCircle2, AlertCircle, Cpu } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { BiometricAuth } from '@aparajita/capacitor-biometric-auth';
 import { sha256 } from '../utils/sha256';
 
 export default function HardwareFingerprintCapture({ onHash }) {
+  const isNative = Capacitor.isNativePlatform();
   const [supported, setSupported] = useState(true);
   const [port, setPort] = useState(null);
   const [connecting, setConnecting] = useState(false);
@@ -11,10 +14,10 @@ export default function HardwareFingerprintCapture({ onHash }) {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    if (!('serial' in navigator)) {
+    if (!isNative && !('serial' in navigator)) {
       setSupported(false);
     }
-  }, []);
+  }, [isNative]);
 
   const connect = async () => {
     try {
@@ -89,6 +92,38 @@ export default function HardwareFingerprintCapture({ onHash }) {
     }
   };
 
+  const runMobileMockScan = async () => {
+    try {
+      setConnecting(true);
+      setStatus('Checking biometric availability...');
+      const availability = await BiometricAuth.checkBiometry();
+      if (!availability?.isAvailable) {
+        setStatus(availability?.reason || 'Biometric authentication unavailable on this device');
+        return;
+      }
+
+      setStatus('Waiting for fingerprint authentication...');
+      await BiometricAuth.authenticate({
+        reason: 'Mock fingerprint scan for vote verification',
+        cancelTitle: 'Cancel',
+        androidTitle: 'Fingerprint Verification',
+        androidSubtitle: 'Use phone fingerprint to continue voting',
+        allowDeviceCredential: false,
+      });
+
+      const mockFingerprintPayload = `MOBILE_MOCK_SCAN_${Date.now()}`;
+      const hash = await sha256(mockFingerprintPayload);
+      onHash?.(hash);
+      setDone(true);
+      setStatus('Mock fingerprint verification successful');
+    } catch (err) {
+      console.error(err);
+      setStatus(err?.message || 'Fingerprint authentication failed');
+    } finally {
+      setConnecting(false);
+    }
+  };
+
   if (!supported) {
     return (
       <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-sm text-rose-400 backdrop-blur-md flex items-start gap-3">
@@ -130,7 +165,17 @@ export default function HardwareFingerprintCapture({ onHash }) {
       </div>
 
       <div className="flex flex-wrap gap-4 items-center">
-        {!port ? (
+        {isNative ? (
+          <button
+            type="button"
+            onClick={runMobileMockScan}
+            disabled={connecting}
+            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold transition-all shadow-lg shadow-emerald-950/20 active:scale-95 disabled:opacity-50"
+          >
+            <Fingerprint className="w-4 h-4" />
+            {connecting ? 'Scanning...' : 'Scan with Phone Fingerprint'}
+          </button>
+        ) : !port ? (
           <button
             type="button"
             onClick={connect}
@@ -162,7 +207,7 @@ export default function HardwareFingerprintCapture({ onHash }) {
         )}
 
         <div className="flex items-center gap-2 ml-auto">
-          <div className={`h-2 w-2 rounded-full ${port ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`} />
+          <div className={`h-2 w-2 rounded-full ${isNative ? (done ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700') : port ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`} />
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{status}</p>
         </div>
       </div>

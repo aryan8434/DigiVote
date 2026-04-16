@@ -1,0 +1,9 @@
+{
+  "appId": "com.digivote.app",
+  "appName": "DigiVote",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true
+  }
+}

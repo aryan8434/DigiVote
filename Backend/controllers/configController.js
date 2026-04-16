@@ -1,4 +1,41 @@
-const Config = require('../model/Config');
+const Config = require("../model/config");
+
+const ALLOWED_ELECTION_STATUSES = new Set([
+  "registration",
+  "waiting",
+  "voting",
+  "ended",
+]);
+
+function parseOptionalDate(raw, fieldName) {
+  if (raw === undefined) {
+    return { provided: false };
+  }
+
+  if (raw === null || raw === "") {
+    return { provided: true, value: null };
+  }
+
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) {
+    return {
+      provided: true,
+      error: `${fieldName} must be a valid date-time value.`,
+    };
+  }
+
+  return { provided: true, value: parsed };
+}
+
+function shapeConfig(config) {
+  return {
+    electionStatus: config.electionStatus,
+    startTime: config.startTime,
+    endTime: config.endTime,
+    candidateRegStart: config.candidateRegStart,
+    candidateRegEnd: config.candidateRegEnd,
+  };
+}
 
 /**
  * Get current election config (public)
@@ -10,7 +47,7 @@ async function getConfig(req, res) {
       return res.json({
         success: true,
         config: {
-          electionStatus: 'registration',
+          electionStatus: "registration",
           startTime: null,
           endTime: null,
           candidateRegStart: null,
@@ -21,17 +58,15 @@ async function getConfig(req, res) {
     }
     res.json({
       success: true,
-      config: {
-        electionStatus: config.electionStatus,
-        startTime: config.startTime,
-        endTime: config.endTime,
-        candidateRegStart: config.candidateRegStart,
-        candidateRegEnd: config.candidateRegEnd,
-      },
+      config: shapeConfig(config),
       serverTime: new Date().toISOString(),
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error("Failed to fetch election config:", err);
+    res.status(500).json({
+      success: false,
+      message: "Unable to load election configuration right now.",
+    });
   }
 }
 
@@ -40,32 +75,110 @@ async function getConfig(req, res) {
  */
 async function updateConfig(req, res) {
   try {
-    const { electionStatus, startTime, endTime, candidateRegStart, candidateRegEnd } = req.body;
+    const {
+      electionStatus,
+      startTime,
+      endTime,
+      candidateRegStart,
+      candidateRegEnd,
+    } = req.body;
+
+    if (
+      electionStatus !== undefined &&
+      !ALLOWED_ELECTION_STATUSES.has(electionStatus)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid electionStatus. Allowed values: registration, waiting, voting, ended.",
+      });
+    }
+
+    const parsedStart = parseOptionalDate(startTime, "startTime");
+    const parsedEnd = parseOptionalDate(endTime, "endTime");
+    const parsedCandidateStart = parseOptionalDate(
+      candidateRegStart,
+      "candidateRegStart",
+    );
+    const parsedCandidateEnd = parseOptionalDate(candidateRegEnd, "candidateRegEnd");
+
+    const parseError = [
+      parsedStart,
+      parsedEnd,
+      parsedCandidateStart,
+      parsedCandidateEnd,
+    ].find((result) => result.error);
+
+    if (parseError) {
+      return res.status(400).json({ success: false, message: parseError.error });
+    }
+
+    const startValue = parsedStart.provided ? parsedStart.value : undefined;
+    const endValue = parsedEnd.provided ? parsedEnd.value : undefined;
+    if (startValue instanceof Date && endValue instanceof Date && startValue >= endValue) {
+      return res.status(400).json({
+        success: false,
+        message: "Voting end time must be later than voting start time.",
+      });
+    }
+
+    const candidateStartValue = parsedCandidateStart.provided
+      ? parsedCandidateStart.value
+      : undefined;
+    const candidateEndValue = parsedCandidateEnd.provided
+      ? parsedCandidateEnd.value
+      : undefined;
+    if (
+      candidateStartValue instanceof Date &&
+      candidateEndValue instanceof Date &&
+      candidateStartValue >= candidateEndValue
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Candidate registration end time must be later than candidate registration start time.",
+      });
+    }
+
+    const updateFields = {
+      ...(electionStatus !== undefined && { electionStatus }),
+      ...(parsedStart.provided && { startTime: parsedStart.value }),
+      ...(parsedEnd.provided && { endTime: parsedEnd.value }),
+      ...(parsedCandidateStart.provided && {
+        candidateRegStart: parsedCandidateStart.value,
+      }),
+      ...(parsedCandidateEnd.provided && { candidateRegEnd: parsedCandidateEnd.value }),
+    };
+
     const config = await Config.findOneAndUpdate(
       {},
+      { $set: updateFields },
       {
-        $set: {
-          ...(electionStatus && { electionStatus }),
-          ...(startTime ? { startTime: new Date(startTime) } : { startTime: null }),
-          ...(endTime ? { endTime: new Date(endTime) } : { endTime: null }),
-          ...(candidateRegStart ? { candidateRegStart: new Date(candidateRegStart) } : { candidateRegStart: null }),
-          ...(candidateRegEnd ? { candidateRegEnd: new Date(candidateRegEnd) } : { candidateRegEnd: null }),
-        },
+        upsert: true,
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
       },
-      { upsert: true, new: true }
     );
+
     res.json({
       success: true,
-      config: {
-        electionStatus: config.electionStatus,
-        startTime: config.startTime,
-        endTime: config.endTime,
-        candidateRegStart: config.candidateRegStart,
-        candidateRegEnd: config.candidateRegEnd,
-      },
+      config: shapeConfig(config),
     });
   } catch (err) {
-    res.status(500).json({ success: false, message: 'Update failed' });
+    console.error("Failed to update election config:", err);
+
+    if (err?.name === "ValidationError" || err?.name === "CastError") {
+      return res.status(400).json({
+        success: false,
+        message: err.message || "Invalid election configuration data.",
+      });
+    }
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to update configuration right now. Please try again.",
+    });
   }
 }
 

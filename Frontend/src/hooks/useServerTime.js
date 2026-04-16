@@ -1,8 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
-import { io } from 'socket.io-client';
-import axiosClient from '../utils/axiosClient';
+import { useState, useEffect, useCallback } from "react";
+import { io } from "socket.io-client";
+import axiosClient from "../utils/axiosClient";
+import { getApiBaseUrl } from "../utils/apiBaseUrl";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_URL = getApiBaseUrl();
+const SOCKET_URL =
+  API_URL.startsWith("http://") || API_URL.startsWith("https://")
+    ? new URL(API_URL).origin
+    : window.location.origin;
 
 export function useServerTime() {
   const [serverTime, setServerTime] = useState(null);
@@ -11,7 +16,7 @@ export function useServerTime() {
 
   const fetchTime = useCallback(async () => {
     try {
-      const res = await axiosClient.get('/api/time');
+      const res = await axiosClient.get("/api/time");
       if (res.data?.serverTime) setServerTime(new Date(res.data.serverTime));
       if (res.data?.config) setConfig(res.data.config);
     } catch {
@@ -24,13 +29,13 @@ export function useServerTime() {
 
   useEffect(() => {
     fetchTime();
-    const socket = io(API_URL, { transports: ['websocket', 'polling'] });
-    socket.on('connect', () => socket.emit('getTime'));
-    socket.on('timeUpdate', (data) => {
+    const socket = io(SOCKET_URL, { transports: ["websocket", "polling"] });
+    socket.on("connect", () => socket.emit("getTime"));
+    socket.on("timeUpdate", (data) => {
       if (data?.serverTime) setServerTime(new Date(data.serverTime));
       if (data?.config) setConfig(data.config);
     });
-    socket.on('electionUpdate', fetchTime);
+    socket.on("electionUpdate", fetchTime);
 
     const interval = setInterval(fetchTime, 30000);
     return () => {
@@ -47,10 +52,12 @@ export function useServerTime() {
     config?.endTime &&
     now >= new Date(config.startTime) &&
     now <= new Date(config.endTime);
-  const votingNotStarted = config?.startTime && now < new Date(config.startTime);
-  const countdownToStart = votingNotStarted && config?.startTime
-    ? new Date(config.startTime) - now
-    : 0;
+  const votingNotStarted =
+    config?.startTime && now < new Date(config.startTime);
+  const countdownToStart =
+    votingNotStarted && config?.startTime
+      ? new Date(config.startTime) - now
+      : 0;
 
   return {
     serverTime: now,

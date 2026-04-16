@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useServerTime } from '../hooks/useServerTime';
-import { useLanguage } from '../contexts/LanguageContext';
-import { Vote, UserPlus, Users, HelpCircle } from 'lucide-react';
+import { Capacitor } from "@capacitor/core";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useServerTime } from "../hooks/useServerTime";
+import { useLanguage } from "../contexts/LanguageContext";
+import { Vote, UserPlus, Users, HelpCircle } from "lucide-react";
 
 function Countdown({ ms }) {
   if (ms <= 0) return null;
@@ -31,7 +32,14 @@ function Countdown({ ms }) {
   );
 }
 
-function Block({ icon: Icon, title, onClick, disabled, children, className = '' }) {
+function Block({
+  icon: Icon,
+  title,
+  onClick,
+  disabled,
+  children,
+  className = "",
+}) {
   return (
     <button
       type="button"
@@ -68,13 +76,15 @@ export default function Home() {
     countdownToStart,
   } = useServerTime();
 
+  const isNative = Capacitor.isNativePlatform();
+
   const handleVote = () => {
     if (votingNotStarted) return;
     if (!votingOpen) {
-      alert('Voting period has ended.');
+      alert("Voting period has ended.");
       return;
     }
-    navigate('/vote');
+    navigate("/vote");
   };
 
   const handleVoterReg = () => {
@@ -82,7 +92,7 @@ export default function Home() {
       alert(t.registrationClosed);
       return;
     }
-    navigate('/voter-registration');
+    navigate("/voter-registration");
   };
 
   const handleCandidateReg = () => {
@@ -90,7 +100,7 @@ export default function Home() {
       alert(t.registrationClosed);
       return;
     }
-    navigate('/candidate-registration');
+    navigate("/candidate-registration");
   };
 
   if (loading) {
@@ -108,17 +118,18 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 flex flex-col">
-      <header className="border-b border-slate-800 bg-slate-950/80 backdrop-blur">
+      <header className="border-b border-slate-800 bg-slate-950">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           <div className="flex flex-col">
             <p className="text-[10px] uppercase tracking-[0.35em] text-emerald-400/80">
               Secure Digital Voting
             </p>
-            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">DigiVote</h1>
+            <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">
+              DigiVote
+            </h1>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-3">
-          </div>
+          <div className="flex items-center gap-2 sm:gap-3"></div>
         </div>
       </header>
 
@@ -129,11 +140,14 @@ export default function Home() {
             <div className="space-y-4">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-semibold tracking-tight">
                 Cast your vote with
-                <span className="block text-emerald-400">trust & transparency.</span>
+                <span className="block text-emerald-400">
+                  trust & transparency.
+                </span>
               </h2>
               <p className="text-sm sm:text-base text-slate-300/90 max-w-xl">
-                DigiVote turns complex election flows into a clean, guided experience. Verify your
-                identity, explore candidates, and submit your ballot in a few secure steps.
+                DigiVote turns complex election flows into a clean, guided
+                experience. Verify your identity, explore candidates, and submit
+                your ballot in a few secure steps.
               </p>
             </div>
 
@@ -145,23 +159,27 @@ export default function Home() {
                   </p>
                   <p className="mt-1 text-base sm:text-lg font-semibold text-slate-50">
                     {votingOpen
-                      ? t.electionLive || 'Election is live'
+                      ? t.electionLive || "Election is live"
                       : votingNotStarted
-                        ? t.electionScheduled || 'Election scheduled'
-                        : t.electionClosed || 'Election closed'}
+                        ? t.electionScheduled || "Election scheduled"
+                        : t.electionClosed || "Election closed"}
                   </p>
                 </div>
                 <span
-                  className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold ${votingOpen
-                      ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-400/60'
-                      : 'bg-slate-900 text-slate-200 border border-slate-600'
-                    }`}
+                  className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-semibold ${
+                    votingOpen
+                      ? "bg-emerald-500/15 text-emerald-300 border border-emerald-400/60"
+                      : "bg-slate-900 text-slate-200 border border-slate-600"
+                  }`}
                 >
                   <span
-                    className={`h-1.5 w-1.5 rounded-full ${votingOpen ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'
-                      }`}
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      votingOpen
+                        ? "bg-emerald-400 animate-pulse"
+                        : "bg-slate-400"
+                    }`}
                   />
-                  {votingOpen ? 'LIVE' : 'SYNCED'}
+                  {votingOpen ? "LIVE" : "SYNCED"}
                 </span>
               </div>
 
@@ -178,15 +196,24 @@ export default function Home() {
             <div className="grid gap-3 text-xs sm:text-sm text-slate-300/90">
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                <p>End-to-end encrypted vote transfer and tamper-resistant storage.</p>
+                <p>
+                  End-to-end encrypted vote transfer and tamper-resistant
+                  storage.
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                <p>Real-time sync between election configuration and all connected devices.</p>
+                <p>
+                  Real-time sync between election configuration and all
+                  connected devices.
+                </p>
               </div>
               <div className="flex items-center gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                <p>Designed for campuses, organizations, and communities of any size.</p>
+                <p>
+                  Designed for campuses, organizations, and communities of any
+                  size.
+                </p>
               </div>
             </div>
           </section>
@@ -202,27 +229,52 @@ export default function Home() {
               >
                 {votingNotStarted && countdownToStart > 0 ? (
                   <p className="text-emerald-200 text-xs sm:text-sm">
-                    Your ballot opens soon. You&apos;ll be guided step-by-step once voting starts.
+                    Your ballot opens soon. You&apos;ll be guided step-by-step
+                    once voting starts.
                   </p>
                 ) : votingOpen ? (
                   <p className="text-emerald-200 text-xs sm:text-sm">
-                    Begin a secure voting session and submit your choices with confidence.
+                    Begin a secure voting session and submit your choices with
+                    confidence.
                   </p>
                 ) : (
-                  <p className="text-rose-200 text-xs sm:text-sm">Voting period has ended.</p>
+                  <p className="text-rose-200 text-xs sm:text-sm">
+                    Voting period has ended.
+                  </p>
                 )}
               </Block>
 
               <Block
-                icon={HelpCircle}
-                title={t.helpDesk}
-                onClick={() => navigate('/help-desk')}
-                disabled={false}
+                icon={UserPlus}
+                title={t.voterRegistration || "Register New User"}
+                onClick={handleVoterReg}
+                disabled={!registrationOpen}
               >
-                <p className="text-slate-200 text-xs sm:text-sm">
-                  Get answers about registration, voting steps, or resolving access issues.
-                </p>
+                {registrationOpen ? (
+                  <p className="text-emerald-200 text-xs sm:text-sm">
+                    Create a new voter profile in the app and complete fingerprint
+                    verification before election day.
+                  </p>
+                ) : (
+                  <p className="text-rose-200 text-xs sm:text-sm">
+                    Registration window is currently closed.
+                  </p>
+                )}
               </Block>
+
+              {!isNative && (
+                <Block
+                  icon={HelpCircle}
+                  title={t.helpDesk}
+                  onClick={() => navigate("/help-desk")}
+                  disabled={false}
+                >
+                  <p className="text-slate-200 text-xs sm:text-sm">
+                    Get answers about registration, voting steps, or resolving
+                    access issues.
+                  </p>
+                </Block>
+              )}
             </div>
           </section>
         </div>
@@ -230,4 +282,3 @@ export default function Home() {
     </div>
   );
 }
-
