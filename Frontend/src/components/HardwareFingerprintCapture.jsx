@@ -136,8 +136,12 @@ export default function HardwareFingerprintCapture({ onHash }) {
   }
 
   if (done) {
+    const doneClasses = isNative
+      ? 'flex items-center gap-4 p-5 rounded-3xl bg-emerald-500/10 border border-emerald-400/20 backdrop-blur-xl'
+      : 'flex items-center gap-4 p-5 rounded-3xl bg-emerald-500/10 border border-emerald-400/20 backdrop-blur-xl animate-in fade-in zoom-in duration-300';
+
     return (
-      <div className="flex items-center gap-4 p-5 rounded-3xl bg-emerald-500/10 border border-emerald-400/20 backdrop-blur-xl animate-in fade-in zoom-in duration-300">
+      <div className={doneClasses}>
         <div className="p-3 bg-emerald-500/20 rounded-2xl">
           <CheckCircle2 className="w-8 h-8 text-emerald-400" />
         </div>
@@ -207,7 +211,7 @@ export default function HardwareFingerprintCapture({ onHash }) {
         )}
 
         <div className="flex items-center gap-2 ml-auto">
-          <div className={`h-2 w-2 rounded-full ${isNative ? (done ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700') : port ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`} />
+          <div className={`h-2 w-2 rounded-full ${isNative ? (done ? 'bg-emerald-500' : 'bg-slate-700') : port ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`} />
           <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{status}</p>
         </div>
       </div>

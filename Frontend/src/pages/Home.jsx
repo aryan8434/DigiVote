@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useServerTime } from "../hooks/useServerTime";
 import { useLanguage } from "../contexts/LanguageContext";
-import { Vote, UserPlus, Users, HelpCircle } from "lucide-react";
+import { Vote, UserPlus, Users, HelpCircle, Trophy } from "lucide-react";
 
 function Countdown({ ms }) {
   if (ms <= 0) return null;
@@ -93,14 +93,6 @@ export default function Home() {
       return;
     }
     navigate("/voter-registration");
-  };
-
-  const handleCandidateReg = () => {
-    if (!registrationOpen) {
-      alert(t.registrationClosed);
-      return;
-    }
-    navigate("/candidate-registration");
   };
 
   if (loading) {
@@ -272,6 +264,19 @@ export default function Home() {
                   <p className="text-slate-200 text-xs sm:text-sm">
                     Get answers about registration, voting steps, or resolving
                     access issues.
+                  </p>
+                </Block>
+              )}
+
+              {isNative && (
+                <Block
+                  icon={Trophy}
+                  title={t.results || "Results"}
+                  onClick={() => navigate("/results")}
+                  disabled={false}
+                >
+                  <p className="text-slate-200 text-xs sm:text-sm">
+                    View candidate rankings ordered by total votes.
                   </p>
                 </Block>
               )}

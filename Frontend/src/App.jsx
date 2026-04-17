@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import { LanguageProvider } from './contexts/LanguageContext';
 import Intro from './pages/Intro';
 import VoterLogin from './pages/VoterLogin';
@@ -12,6 +13,8 @@ import AdminLogin from './pages/AdminLogin';
 import ElectionResults from './pages/ElectionResults';
 
 function App() {
+  const isNative = Capacitor.isNativePlatform();
+
   return (
     <LanguageProvider>
       <Router>
@@ -21,11 +24,18 @@ function App() {
           <Route path="/home" element={<Home />} />
           <Route path="/vote" element={<VoteFlow />} />
           <Route path="/voter-registration" element={<VoterRegistration />} />
-          <Route path="/candidate-registration" element={<CandidateRegistration />} />
-          <Route path="/help-desk" element={<HelpDesk />} />
           <Route path="/results" element={<ElectionResults />} />
-          <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminConfig />} />
+
+          {!isNative && (
+            <>
+              <Route path="/candidate-registration" element={<CandidateRegistration />} />
+              <Route path="/help-desk" element={<HelpDesk />} />
+              <Route path="/admin-login" element={<AdminLogin />} />
+              <Route path="/admin" element={<AdminConfig />} />
+            </>
+          )}
+
+          {isNative && <Route path="*" element={<Home />} />}
         </Routes>
       </Router>
     </LanguageProvider>
