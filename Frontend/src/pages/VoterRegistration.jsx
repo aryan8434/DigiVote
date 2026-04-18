@@ -2,8 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosClient from "../utils/axiosClient";
 import { useLanguage } from "../contexts/LanguageContext";
-import FingerprintSimulator from "../components/FingerprintSimulator";
-import HardwareFingerprintCapture from "../components/HardwareFingerprintCapture";
+import WindowsHelloPIN from "../components/WindowsHelloPIN";
 import {
   ArrowLeft,
   Check,
@@ -73,8 +72,8 @@ export default function VoterRegistration() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50 py-12 px-4 relative overflow-hidden">
       {/* Background Decorative Glows */}
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-0 right-0 w-125 h-125 bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-125 h-125 bg-blue-500/10 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-3xl mx-auto relative z-10">
         <button
@@ -245,7 +244,7 @@ export default function VoterRegistration() {
                     onChange={(e) =>
                       update("address.permanent", e.target.value)
                     }
-                    className={`${inputClasses} pl-11 min-h-[80px]`}
+                    className={`${inputClasses} pl-11 min-h-20`}
                     placeholder="Enter full permanent residential address"
                     rows={2}
                   />
@@ -285,32 +284,19 @@ export default function VoterRegistration() {
             </div>
           </div>
 
-          {/* Section 3: Biometrics */}
+          {/* Section 3: Windows Hello PIN */}
           <div className="bg-slate-900/60 border border-slate-700/50 rounded-3xl p-8 backdrop-blur-xl shadow-2xl hover:border-slate-600/50 transition-colors">
             <div className="flex items-center gap-4 mb-8">
-              <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl">
-                <Hash className="w-6 h-6 text-indigo-400" strokeWidth={1.5} />
+              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-2xl">
+                <Hash className="w-6 h-6 text-blue-400" strokeWidth={1.5} />
               </div>
               <h2 className="text-xl font-semibold text-white tracking-tight">
-                Biometric Data
+                Windows Hello PIN Verification
               </h2>
             </div>
 
             <div className="space-y-6">
-              <HardwareFingerprintCapture onHash={setFingerprintHash} />
-
-              <div className="relative py-4">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-slate-800" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-slate-900 px-3 text-slate-500 font-bold tracking-[0.2em]">
-                    OR USE SIMULATOR
-                  </span>
-                </div>
-              </div>
-
-              <FingerprintSimulator onHash={setFingerprintHash} />
+              <WindowsHelloPIN onHash={setFingerprintHash} />
             </div>
 
             {/* Verification Status */}
@@ -331,13 +317,11 @@ export default function VoterRegistration() {
                   className={`font-bold ${fingerprintHash ? "text-emerald-400" : "text-slate-500"}`}
                 >
                   {fingerprintHash
-                    ? "Biometric Verified"
-                    : "Awaiting Enrollment"}
+                    ? "PIN Verified"
+                    : "Awaiting PIN Verification"}
                 </p>
                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                  {fingerprintHash
-                    ? "Digital signature registered"
-                    : "Scanner required"}
+                  {fingerprintHash ? "Ready to submit" : "6-digit PIN required"}
                 </p>
               </div>
             </div>

@@ -244,8 +244,8 @@ export default function Home() {
               >
                 {registrationOpen ? (
                   <p className="text-emerald-200 text-xs sm:text-sm">
-                    Create a new voter profile in the app and complete fingerprint
-                    verification before election day.
+                    Create a new voter profile in the app and complete
+                    fingerprint verification before election day.
                   </p>
                 ) : (
                   <p className="text-rose-200 text-xs sm:text-sm">
