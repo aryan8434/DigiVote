@@ -1,2 +1,1 @@
-# digivote_temp
-
+# Digivote - Secure Voting Platform for Democratic Elections
