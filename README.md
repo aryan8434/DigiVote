@@ -9,7 +9,7 @@ A modern, secure digital voting platform built for transparent elections, fast v
 
 ## Android App
 
-- Download latest APK: [DigiVote Android APK](https://github.com/aryan8434/DigiVote/blob/main/share/DigiVote-latest-release-unsigned.apk?raw=1)
+- Download latest APK: [DigiVote Android APK](https://github.com/aryan8434/DigiVote/blob/main/Frontend/android/app/build/outputs/apk/release/app-release-unsigned.apk?raw=1)
 - Local file in this repo: [share/DigiVote-latest-release-unsigned.apk](share/DigiVote-latest-release-unsigned.apk)
 
 Note: The current APK is an unsigned release build intended for direct testing/distribution.
